@@ -1,0 +1,135 @@
+export interface ModelConfig {
+  id: string;
+  name: string;
+  provider: string;
+  description: string;
+}
+
+export interface TaskConfig {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  models: string[];
+}
+
+export const MODELS: Record<string, ModelConfig> = {
+  "deepseek/deepseek-chat": {
+    id: "deepseek/deepseek-chat",
+    name: "DeepSeek V3",
+    provider: "DeepSeek",
+    description: "Modelo general de DeepSeek. Excelente relación calidad-precio."
+  },
+  "deepseek/deepseek-coder": {
+    id: "deepseek/deepseek-coder",
+    name: "DeepSeek Coder",
+    provider: "DeepSeek",
+    description: "Especializado en programación y tareas técnicas."
+  },
+  "deepseek/deepseek-r1": {
+    id: "deepseek/deepseek-r1",
+    name: "DeepSeek R1",
+    provider: "DeepSeek",
+    description: "Razonamiento complejo y resolución de problemas."
+  },
+  "qwen/qwen-plus": {
+    id: "qwen/qwen-plus",
+    name: "Qwen Plus",
+    provider: "Alibaba",
+    description: "Modelo versátil de Alibaba. Bueno en múltiples idiomas."
+  },
+  "qwen/qwen-coder": {
+    id: "qwen/qwen-coder",
+    name: "Qwen Coder",
+    provider: "Alibaba",
+    description: "Especializado en código y desarrollo de software."
+  },
+  "moonshotai/kimi-k2": {
+    id: "moonshotai/kimi-k2",
+    name: "Kimi K2",
+    provider: "Moonshot AI",
+    description: "Contexto ultralargo para documentos extensos."
+  },
+  "z-ai/glm-4.5": {
+    id: "z-ai/glm-4.5",
+    name: "GLM 4.5",
+    provider: "Z.AI",
+    description: "Modelo general con buena relación calidad-precio."
+  },
+  "z-ai/glm-4.6": {
+    id: "z-ai/glm-4.6",
+    name: "GLM 4.6",
+    provider: "Z.AI",
+    description: "Contexto largo y buen rendimiento general."
+  },
+  "minimax/minimax-m2-her": {
+    id: "minimax/minimax-m2-her",
+    name: "MiniMax M2-her",
+    provider: "MiniMax",
+    description: "Especializado en escritura creativa y roleplay."
+  },
+  "tencent/hy-mt2-7b": {
+    id: "tencent/hy-mt2-7b",
+    name: "Tencent Hy-MT2",
+    provider: "Tencent",
+    description: "Traducción automática multilingüe."
+  },
+  "moonshotai/kimi-k2-thinking": {
+    id: "moonshotai/kimi-k2-thinking",
+    name: "Kimi K2 Thinking",
+    provider: "Moonshot AI",
+    description: "Razonamiento complejo y análisis profundo."
+  }
+};
+
+export const TASKS: TaskConfig[] = [
+  {
+    id: "general",
+    name: "Redacción general",
+    description: "Escribir artículos, correos, informes o contenido general.",
+    icon: "📝",
+    models: ["deepseek/deepseek-chat", "qwen/qwen-plus", "z-ai/glm-4.5"]
+  },
+  {
+    id: "programacion",
+    name: "Programación",
+    description: "Escribir, revisar y depurar código.",
+    icon: "💻",
+    models: ["deepseek/deepseek-coder", "qwen/qwen-coder", "moonshotai/kimi-k2"]
+  },
+  {
+    id: "analisis",
+    name: "Análisis de documentos",
+    description: "Resumir y analizar documentos largos.",
+    icon: "📄",
+    models: ["moonshotai/kimi-k2", "z-ai/glm-4.6"]
+  },
+  {
+    id: "creatividad",
+    name: "Creatividad y diseño",
+    description: "Generar ideas creativas, historias o contenido original.",
+    icon: "🎨",
+    models: ["minimax/minimax-m2-her", "z-ai/glm-4.5"]
+  },
+  {
+    id: "traduccion",
+    name: "Traducción",
+    description: "Traducir textos entre múltiples idiomas.",
+    icon: "🌍",
+    models: ["tencent/hy-mt2-7b", "qwen/qwen-plus", "z-ai/glm-4.5"]
+  },
+  {
+    id: "calculo",
+    name: "Cálculo y razonamiento",
+    description: "Resolver problemas complejos y razonar paso a paso.",
+    icon: "🧮",
+    models: ["deepseek/deepseek-r1", "z-ai/glm-4.6", "moonshotai/kimi-k2-thinking"]
+  },
+  {
+    id: "presentaciones",
+    name: "Presentaciones",
+    description: "Estructurar ideas y crear contenido para presentaciones.",
+    icon: "📊",
+    models: ["qwen/qwen-plus", "z-ai/glm-4.5"]
+  }
+];
