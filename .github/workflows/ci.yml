@@ -26,6 +26,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Un ID de modelo inexistente compila igual y rompe en producción.
+      - name: Comprobar que los modelos existen en OpenRouter
+        run: npm run check:models
+
       # El build no necesita secretos: todas las páginas que tocan la base de
       # datos son dinámicas y la conexión se abre en tiempo de ejecución.
       - name: Build

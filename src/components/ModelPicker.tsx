@@ -1,7 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { articleUrl, modelsForTask, MODELS, type TaskConfig } from '@/config/models';
+import {
+  articleUrl,
+  COST_LABEL,
+  formatContext,
+  modelsForTask,
+  MODELS,
+  type TaskConfig,
+} from '@/config/models';
 import { ArrowUpRight, Check, ChevronDown, Close } from './icons';
 
 interface ModelPickerProps {
@@ -63,6 +70,7 @@ export default function ModelPicker({ task, selectedModel, onSelectModel }: Mode
             <ul className="space-y-1.5">
               {models.map((model) => {
                 const isSelected = model.id === current.id;
+                const article = articleUrl(model);
                 return (
                   <li key={model.id}>
                     <div
@@ -81,7 +89,10 @@ export default function ModelPicker({ task, selectedModel, onSelectModel }: Mode
                       >
                         <span className="flex-1">
                           <span className="block text-[15px] font-medium">{model.name}</span>
-                          <span className="block text-[12px] text-ink-tertiary">{model.provider}</span>
+                          <span className="block text-[12px] text-ink-tertiary">
+                            {model.provider} · {COST_LABEL[model.tier]} ·{' '}
+                            {formatContext(model.contextTokens)} de contexto
+                          </span>
                           <span className="mt-1 block text-[13px] leading-relaxed text-ink-secondary">
                             {model.description}
                           </span>
@@ -89,15 +100,17 @@ export default function ModelPicker({ task, selectedModel, onSelectModel }: Mode
                         {isSelected && <Check className="mt-1 size-4 shrink-0 text-accent" />}
                       </button>
 
-                      <a
-                        href={articleUrl(model)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2.5 inline-flex items-center gap-1 text-[13px] text-accent transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
-                      >
-                        Saber más sobre {model.name}
-                        <ArrowUpRight className="size-3.5" />
-                      </a>
+                      {article && (
+                        <a
+                          href={article}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2.5 inline-flex items-center gap-1 text-[13px] text-accent transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+                        >
+                          Saber más sobre {model.name}
+                          <ArrowUpRight className="size-3.5" />
+                        </a>
+                      )}
                     </div>
                   </li>
                 );
