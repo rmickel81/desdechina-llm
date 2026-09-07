@@ -1,6 +1,7 @@
 'use client';
 
 import { TASKS } from '@/config/models';
+import { TaskIcon } from './icons';
 
 interface TaskSelectorProps {
   selectedTask: string;
@@ -9,22 +10,31 @@ interface TaskSelectorProps {
 
 export default function TaskSelector({ selectedTask, onSelectTask }: TaskSelectorProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-      {TASKS.map((task) => (
-        <button
-          key={task.id}
-          onClick={() => onSelectTask(task.id)}
-          className={`p-4 rounded-xl border transition ${
-            selectedTask === task.id
-              ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-              : 'border-gray-200 hover:border-red-300 dark:border-gray-700'
-          }`}
-        >
-          <div className="text-2xl mb-2">{task.icon}</div>
-          <div className="font-semibold text-sm">{task.name}</div>
-          <div className="text-xs text-gray-500 mt-1">{task.description}</div>
-        </button>
-      ))}
-    </div>
+    <nav
+      aria-label="Tipo de tarea"
+      className="border-b border-hairline bg-canvas/80 backdrop-blur-xl"
+    >
+      <div className="mx-auto flex max-w-3xl gap-1.5 overflow-x-auto px-5 py-2.5 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:overflow-x-visible [&::-webkit-scrollbar]:hidden">
+        {TASKS.map((task) => {
+          const isSelected = selectedTask === task.id;
+          return (
+            <button
+              key={task.id}
+              type="button"
+              onClick={() => onSelectTask(task.id)}
+              aria-pressed={isSelected}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+                isSelected
+                  ? 'bg-ink text-canvas'
+                  : 'text-ink-secondary hover:bg-elevated hover:text-ink'
+              }`}
+            >
+              <TaskIcon name={task.icon} className="size-[15px]" />
+              {task.name}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }

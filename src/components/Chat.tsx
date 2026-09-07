@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { TASKS } from '@/config/models';
+import { MODELS, TASKS } from '@/config/models';
 import { sendMessage } from '@/lib/openrouter';
 import { getApiKey, getHistory, saveHistory, clearHistory } from '@/lib/storage';
 import TaskSelector from './TaskSelector';
 import SettingsModal from './SettingsModal';
+import { ArrowUp, Settings, TaskIcon } from './icons';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -20,6 +21,11 @@ export default function Chat() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [error, setError] = useState('');
   const isHistoryLoaded = useRef(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  const task = TASKS.find((t) => t.id === selectedTask) ?? TASKS[0];
+  const model = MODELS[task.models[0]];
 
   // El historial vive en localStorage, que solo existe en el cliente: se carga
   // tras el montaje para que el HTML del servidor y el del cliente coincidan.
@@ -37,16 +43,29 @@ export default function Chat() {
     saveHistory(messages);
   }, [messages]);
 
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, isLoading]);
+
+  // El campo crece con el texto hasta un máximo, como en Mensajes.
+  const resizeInput = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+  };
+
   const handleTaskSelect = (taskId: string) => {
     setSelectedTask(taskId);
     setMessages([]);
+    setError('');
     clearHistory();
   };
 
   const handleSend = async () => {
     const apiKey = getApiKey();
     if (!apiKey) {
-      setError('Por favor, introduce tu API key de OpenRouter en Configuración.');
+      setError('Añade tu clave de API de OpenRouter para empezar.');
       setIsSettingsOpen(true);
       return;
     }
@@ -58,88 +77,131 @@ export default function Chat() {
     setInput('');
     setIsLoading(true);
     setError('');
+    requestAnimationFrame(resizeInput);
 
     try {
-      const task = TASKS.find((t) => t.id === selectedTask)!;
-      const model = task.models[0];
       const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
-      const response = await sendMessage(apiKey, model, apiMessages);
-      const assistantMessage: Message = { role: 'assistant', content: response };
-      setMessages((prev) => [...prev, assistantMessage]);
+      const response = await sendMessage(apiKey, task.models[0], apiMessages);
+      setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al conectar con OpenRouter');
+      setError(err instanceof Error ? err.message : 'No se ha podido conectar con OpenRouter.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
-      <header className="border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-red-600 dark:text-red-400">
-          DesdeChina LLM
-        </h1>
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
-        >
-          ⚙️ Configuración
-        </button>
+    <div className="flex h-dvh flex-col bg-canvas text-ink">
+      <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-5">
+          <h1 className="text-[17px] font-semibold tracking-tight">DesdeChina LLM</h1>
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label="Ajustes"
+            className="-mr-2 rounded-full p-2 text-ink-secondary transition-colors hover:bg-elevated hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+          >
+            <Settings className="size-[19px]" />
+          </button>
+        </div>
       </header>
 
       <TaskSelector selectedTask={selectedTask} onSelectTask={handleTaskSelect} />
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mx-4 mt-4">
-          {error}
-        </div>
-      )}
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`max-w-3xl mx-auto p-4 rounded-xl ${
-              msg.role === 'user'
-                ? 'bg-gray-100 dark:bg-gray-800 ml-auto'
-                : 'bg-blue-50 dark:bg-gray-700 mr-auto'
-            }`}
-          >
-            <div className="font-semibold mb-1">
-              {msg.role === 'user' ? 'Tú' : 'IA China'}
-            </div>
-            <p className="whitespace-pre-wrap">{msg.content}</p>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="max-w-3xl mx-auto p-4 text-gray-500">
-            Pensando...
+      <main className="flex-1 overflow-y-auto">
+        {error && (
+          <div className="mx-auto mt-4 max-w-3xl px-5">
+            <p
+              role="alert"
+              className="rounded-xl border border-hairline bg-elevated px-4 py-3 text-[13px] leading-relaxed text-ink-secondary"
+            >
+              {error}
+            </p>
           </div>
         )}
-      </div>
 
-      <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-        <div className="max-w-3xl mx-auto flex gap-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Escribe tu mensaje..."
-            rows={2}
-            className="flex-1 p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 resize-none"
-          />
-          <button
-            onClick={handleSend}
-            disabled={isLoading || !input.trim()}
-            className="px-6 py-2 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Enviar
-          </button>
+        {messages.length === 0 && !isLoading ? (
+          <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+            <TaskIcon name={task.icon} className="size-8 text-ink-tertiary" />
+            <h2 className="mt-5 text-[26px] font-semibold tracking-tight">{task.name}</h2>
+            <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-ink-secondary">
+              {task.description}
+            </p>
+            <p className="mt-6 text-[12px] text-ink-tertiary">
+              {model.name} · {model.provider}
+            </p>
+          </div>
+        ) : (
+          <div className="mx-auto max-w-3xl space-y-6 px-5 py-8">
+            {messages.map((msg, index) =>
+              msg.role === 'user' ? (
+                <div key={index} className="flex justify-end">
+                  <p className="max-w-[80%] rounded-[20px] bg-accent px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap text-accent-ink">
+                    {msg.content}
+                  </p>
+                </div>
+              ) : (
+                <p
+                  key={index}
+                  className="text-[15px] leading-[1.65] whitespace-pre-wrap text-ink"
+                >
+                  {msg.content}
+                </p>
+              ),
+            )}
+
+            {isLoading && (
+              <div className="flex gap-1.5 py-1" aria-label="Generando respuesta">
+                <span className="typing-dot size-1.5 rounded-full bg-ink-tertiary" />
+                <span
+                  className="typing-dot size-1.5 rounded-full bg-ink-tertiary"
+                  style={{ animationDelay: '0.15s' }}
+                />
+                <span
+                  className="typing-dot size-1.5 rounded-full bg-ink-tertiary"
+                  style={{ animationDelay: '0.3s' }}
+                />
+              </div>
+            )}
+            <div ref={endRef} />
+          </div>
+        )}
+      </main>
+
+      <div className="border-t border-hairline bg-canvas/80 px-5 pt-3 pb-4 backdrop-blur-xl">
+        <div className="mx-auto max-w-3xl">
+          <div className="flex items-end gap-2 rounded-[22px] border border-hairline bg-surface py-2 pr-2 pl-4 transition-colors focus-within:border-accent/40">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                resizeInput();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder={`Escribe para ${task.name.toLowerCase()}`}
+              rows={1}
+              aria-label="Mensaje"
+              className="max-h-40 flex-1 resize-none bg-transparent py-1.5 text-[15px] leading-relaxed placeholder:text-ink-tertiary focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              aria-label="Enviar"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-25"
+            >
+              <ArrowUp className="size-[17px]" />
+            </button>
+          </div>
+          <p className="mt-2.5 text-center text-[11px] text-ink-tertiary">
+            La clave y las conversaciones se guardan solo en este navegador.
+          </p>
         </div>
       </div>
 

@@ -2,11 +2,16 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'DesdeChina LLM',
-  description: 'Trabaja con los mejores modelos de IA china usando tu propia API key de OpenRouter',
+  description:
+    'Trabaja con los mejores modelos de IA china usando tu propia API key de OpenRouter',
 };
 
 export default function RootLayout({
@@ -15,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body className={inter.className}>{children}</body>
+    <html lang="es" className={inter.variable}>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }

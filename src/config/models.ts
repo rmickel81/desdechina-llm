@@ -1,3 +1,5 @@
+import type { TaskIconName } from "@/components/icons";
+
 export interface ModelConfig {
   id: string;
   name: string;
@@ -9,7 +11,7 @@ export interface TaskConfig {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: TaskIconName;
   models: string[];
 }
 
@@ -87,49 +89,49 @@ export const TASKS: TaskConfig[] = [
     id: "general",
     name: "Redacción general",
     description: "Escribir artículos, correos, informes o contenido general.",
-    icon: "📝",
+    icon: "pencil",
     models: ["deepseek/deepseek-chat", "qwen/qwen-plus", "z-ai/glm-4.5"]
   },
   {
     id: "programacion",
     name: "Programación",
     description: "Escribir, revisar y depurar código.",
-    icon: "💻",
+    icon: "code",
     models: ["deepseek/deepseek-coder", "qwen/qwen-coder", "moonshotai/kimi-k2"]
   },
   {
     id: "analisis",
     name: "Análisis de documentos",
     description: "Resumir y analizar documentos largos.",
-    icon: "📄",
+    icon: "document",
     models: ["moonshotai/kimi-k2", "z-ai/glm-4.6"]
   },
   {
     id: "creatividad",
     name: "Creatividad y diseño",
     description: "Generar ideas creativas, historias o contenido original.",
-    icon: "🎨",
+    icon: "sparkle",
     models: ["minimax/minimax-m2-her", "z-ai/glm-4.5"]
   },
   {
     id: "traduccion",
     name: "Traducción",
     description: "Traducir textos entre múltiples idiomas.",
-    icon: "🌍",
+    icon: "globe",
     models: ["tencent/hy-mt2-7b", "qwen/qwen-plus", "z-ai/glm-4.5"]
   },
   {
     id: "calculo",
     name: "Cálculo y razonamiento",
     description: "Resolver problemas complejos y razonar paso a paso.",
-    icon: "🧮",
+    icon: "calculator",
     models: ["deepseek/deepseek-r1", "z-ai/glm-4.6", "moonshotai/kimi-k2-thinking"]
   },
   {
     id: "presentaciones",
     name: "Presentaciones",
     description: "Estructurar ideas y crear contenido para presentaciones.",
-    icon: "📊",
+    icon: "presentation",
     models: ["qwen/qwen-plus", "z-ai/glm-4.5"]
   }
 ];
