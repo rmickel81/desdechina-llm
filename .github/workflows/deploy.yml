@@ -1,0 +1,47 @@
+name: Desplegar a producción
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Si se empujan dos commits seguidos, cancela el despliegue anterior
+# para que no se pisen dos subidas por FTP a la vez.
+concurrency:
+  group: despliegue-produccion
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Compilar y subir a llm.desdechina.es
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Generar el sitio estático
+        run: npm run build
+
+      # `next build` con output: "export" deja el sitio listo en out/
+      - name: Subir por FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./out/
+          server-dir: /public_html/llm/
