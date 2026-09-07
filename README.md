@@ -55,14 +55,32 @@ registre queda como administrador**; después, quien coincida con `ADMIN_EMAIL`.
 ## Despliegue
 
 La app necesita servidor: hay autenticación, base de datos y llamadas con la
-clave de la instalación. No se puede servir como sitio estático.
+clave de la instalación. No se puede servir como sitio estático, así que un
+hosting por FTP no vale.
 
-1. Crea una base de datos PostgreSQL (Neon y Supabase tienen plan gratuito).
-2. Importa el repositorio en [Vercel](https://vercel.com) y añade las variables
-   de la tabla anterior.
-3. Aplica el esquema una vez: `DATABASE_URL="..." npm run db:migrate`.
-4. Añade el dominio en Vercel y apunta el DNS del subdominio.
-5. Regístrate el primero para quedarte como administrador.
+**Base de datos en Neon, aplicación en Vercel.** Se descartó poner la base en
+el hosting compartido: solo ofrece MySQL, y para que Vercel llegue a ella
+habría que abrirla a cualquier IP de internet, porque las funciones sin
+servidor no tienen IP fija. La alternativa coherente para tenerlo todo en un
+mismo sitio es un VPS con Node y PostgreSQL en la misma máquina.
+
+1. Crea una base de datos en [Neon](https://neon.tech) y copia la cadena de
+   conexión **pooled**.
+2. Aplica el esquema, una sola vez:
+   `DATABASE_URL="la-cadena-de-neon" npm run db:migrate`
+3. Importa el repositorio en [Vercel](https://vercel.com) y añade las
+   variables `DATABASE_URL`, `OPENROUTER_API_KEY` y `ADMIN_EMAIL`. El resto
+   tienen valores por defecto razonables.
+4. Añade el dominio en Vercel y apunta ahí el DNS del subdominio.
+5. Abre `/api/salud`: dice si la base de datos y la clave están bien puestas.
+   Debe responder `{"ok": true}`.
+6. Regístrate el primero: el primer usuario queda como administrador.
+
+### Comprobar una instalación
+
+`GET /api/salud` devuelve 200 si todo está en su sitio y 503 con la lista de
+problemas si falta algo. No expone ningún valor de configuración, solo si está
+presente o no.
 
 ## Estructura
 
@@ -75,6 +93,7 @@ src/
 │   └── api/
 │       ├── auth/             # registro, entrar, salir
 │       ├── chat/             # cuota + llamada a OpenRouter
+│       ├── salud/            # diagnóstico de la instalación
 │       └── admin/usuarios/   # listado y edición
 ├── components/               # Chat, TaskSelector, AuthForm, AdminUsers…
 ├── config/models.ts          # Catálogo de modelos y tareas
