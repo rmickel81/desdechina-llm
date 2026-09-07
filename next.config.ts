@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // La app es 100% cliente: se exporta como HTML/CSS/JS estático
-  // para poder servirla desde un hosting por FTP, sin servidor Node.
-  output: "export",
+  // La app dejó de ser estática: necesita servidor para la autenticación,
+  // la cuota por usuario y la llamada a OpenRouter con la clave del servidor.
+  serverExternalPackages: ["pg"],
 };
 
 export default nextConfig;

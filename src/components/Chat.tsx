@@ -2,46 +2,60 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MODELS, TASKS } from '@/config/models';
-import { sendMessage } from '@/lib/openrouter';
-import { getApiKey, getHistory, saveHistory, clearHistory } from '@/lib/storage';
+import { getHistory, saveHistory, clearHistory } from '@/lib/storage';
 import TaskSelector from './TaskSelector';
-import SettingsModal from './SettingsModal';
-import { ArrowUp, Settings, TaskIcon } from './icons';
+import AccountModal from './AccountModal';
+import { ArrowUp, TaskIcon } from './icons';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export default function Chat() {
+export interface ChatUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
+  monthly_limit: number;
+}
+
+interface ChatProps {
+  user: ChatUser;
+  initialUsed: number;
+}
+
+export default function Chat({ user, initialUsed }: ChatProps) {
   const [selectedTask, setSelectedTask] = useState<string>(TASKS[0].id);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [error, setError] = useState('');
+  const [used, setUsed] = useState(initialUsed);
   const isHistoryLoaded = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   const task = TASKS.find((t) => t.id === selectedTask) ?? TASKS[0];
   const model = MODELS[task.models[0]];
+  const remaining = Math.max(0, user.monthly_limit - used);
 
   // El historial vive en localStorage, que solo existe en el cliente: se carga
   // tras el montaje para que el HTML del servidor y el del cliente coincidan.
   useEffect(() => {
-    const history = getHistory();
+    const history = getHistory(user.id);
     if (history.length > 0) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sincronización inicial con localStorage
       setMessages(history);
     }
     isHistoryLoaded.current = true;
-  }, []);
+  }, [user.id]);
 
   useEffect(() => {
     if (!isHistoryLoaded.current) return;
-    saveHistory(messages);
-  }, [messages]);
+    saveHistory(user.id, messages);
+  }, [messages, user.id]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -59,20 +73,13 @@ export default function Chat() {
     setSelectedTask(taskId);
     setMessages([]);
     setError('');
-    clearHistory();
+    clearHistory(user.id);
   };
 
   const handleSend = async () => {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError('Añade tu clave de API de OpenRouter para empezar.');
-      setIsSettingsOpen(true);
-      return;
-    }
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
-    const newMessage: Message = { role: 'user', content: input };
-    const updatedMessages = [...messages, newMessage];
+    const updatedMessages = [...messages, { role: 'user' as const, content: input }];
     setMessages(updatedMessages);
     setInput('');
     setIsLoading(true);
@@ -80,11 +87,23 @@ export default function Chat() {
     requestAnimationFrame(resizeInput);
 
     try {
-      const apiMessages = updatedMessages.map((m) => ({ role: m.role, content: m.content }));
-      const response = await sendMessage(apiKey, task.models[0], apiMessages);
-      setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se ha podido conectar con OpenRouter.');
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taskId: task.id, messages: updatedMessages }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data?.usage) setUsed(data.usage.used);
+        setError(data?.error ?? 'No se ha podido enviar el mensaje.');
+        return;
+      }
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.content }]);
+      setUsed(data.usage.used);
+    } catch {
+      setError('Sin conexión con el servidor. Comprueba tu red.');
     } finally {
       setIsLoading(false);
     }
@@ -95,14 +114,19 @@ export default function Chat() {
       <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-5">
           <h1 className="text-[17px] font-semibold tracking-tight">DesdeChina LLM</h1>
-          <button
-            type="button"
-            onClick={() => setIsSettingsOpen(true)}
-            aria-label="Ajustes"
-            className="-mr-2 rounded-full p-2 text-ink-secondary transition-colors hover:bg-elevated hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
-          >
-            <Settings className="size-[19px]" />
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-[12px] tabular-nums text-ink-tertiary sm:inline">
+              {remaining} restantes
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsAccountOpen(true)}
+              aria-label="Tu cuenta"
+              className="flex size-8 items-center justify-center rounded-full bg-elevated text-[13px] font-medium text-ink-secondary transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+            >
+              {(user.name || user.email).charAt(0).toUpperCase()}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -141,10 +165,7 @@ export default function Chat() {
                   </p>
                 </div>
               ) : (
-                <p
-                  key={index}
-                  className="text-[15px] leading-[1.65] whitespace-pre-wrap text-ink"
-                >
+                <p key={index} className="text-[15px] leading-[1.65] whitespace-pre-wrap text-ink">
                   {msg.content}
                 </p>
               ),
@@ -200,12 +221,17 @@ export default function Chat() {
             </button>
           </div>
           <p className="mt-2.5 text-center text-[11px] text-ink-tertiary">
-            La clave y las conversaciones se guardan solo en este navegador.
+            Las conversaciones se guardan solo en este navegador.
           </p>
         </div>
       </div>
 
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <AccountModal
+        isOpen={isAccountOpen}
+        onClose={() => setIsAccountOpen(false)}
+        user={user}
+        usage={{ used, limit: user.monthly_limit }}
+      />
     </div>
   );
 }

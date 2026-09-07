@@ -42,3 +42,4 @@ next-env.d.ts
 
 # agent files (los regenera next dev en local)
 CLAUDE.md
+!.env.example
