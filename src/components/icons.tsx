@@ -95,6 +95,31 @@ export function ArrowUp({ className }: IconProps) {
   );
 }
 
+export function ChevronDown({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6.5 9.5l5.5 5.5 5.5-5.5" />
+    </svg>
+  );
+}
+
+export function ArrowUpRight({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M7.5 16.5l9-9" />
+      <path d="M8.5 7.5h8v8" />
+    </svg>
+  );
+}
+
+export function Check({ className }: IconProps) {
+  return (
+    <svg {...base} strokeWidth={2} className={className}>
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
 export function Close({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

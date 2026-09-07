@@ -20,11 +20,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Petición no válida.' }, { status: 400 });
   }
 
-  const { taskId, messages } = body as Record<string, unknown>;
+  const { taskId, model: requestedModel, messages } = body as Record<string, unknown>;
 
   const task = TASKS.find((t) => t.id === taskId);
   if (!task) {
     return NextResponse.json({ error: 'Tarea desconocida.' }, { status: 400 });
+  }
+
+  // El modelo llega del navegador, así que solo se acepta si pertenece a la
+  // sección pedida: nadie puede colar por aquí un modelo más caro.
+  const model =
+    requestedModel === undefined
+      ? task.models[0]
+      : task.models.find((id) => id === requestedModel);
+
+  if (!model) {
+    return NextResponse.json(
+      { error: 'Ese modelo no está disponible en esta sección.' },
+      { status: 400 },
+    );
   }
 
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) {
@@ -58,8 +72,6 @@ export async function POST(request: Request) {
       { status: 429 },
     );
   }
-
-  const model = task.models[0];
 
   try {
     const result = await createCompletion(model, clean);

@@ -10,7 +10,7 @@ create table if not exists users (
   password_hash  text not null,
   role           text not null default 'user'   check (role in ('user', 'admin')),
   status         text not null default 'active' check (status in ('active', 'suspended')),
-  monthly_limit  integer not null default 50    check (monthly_limit >= 0),
+  monthly_limit  integer not null default 8     check (monthly_limit >= 0),
   created_at     timestamptz not null default now(),
   last_login_at  timestamptz
 );

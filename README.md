@@ -47,7 +47,7 @@ registre queda como administrador**; después, quien coincida con `ADMIN_EMAIL`.
 | `DATABASE_URL` | Cadena de conexión a PostgreSQL. Usa la versión *pooled* del proveedor. |
 | `OPENROUTER_API_KEY` | Clave de OpenRouter de la instalación. Solo la usa el servidor. |
 | `ADMIN_EMAIL` | Correo que recibe el rol de administrador al registrarse. |
-| `DEFAULT_MONTHLY_LIMIT` | Mensajes al mes de cada cuenta nueva. Por defecto, 50. |
+| `DEFAULT_MONTHLY_LIMIT` | Mensajes al mes de cada cuenta nueva. Por defecto, 8. |
 | `REGISTRATION_OPEN` | `false` cierra el registro público. |
 | `OPENROUTER_MAX_TOKENS` | Tope de tokens por respuesta. Por defecto, 2000. |
 | `PUBLIC_URL` | URL pública, para las estadísticas de OpenRouter. |

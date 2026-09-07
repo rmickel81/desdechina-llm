@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { query, queryOne } from '@/lib/db';
 import { createSession, hashPassword, normalizeEmail, validatePassword } from '@/lib/auth';
 
-const DEFAULT_MONTHLY_LIMIT = Number(process.env.DEFAULT_MONTHLY_LIMIT ?? 50);
+// 8 mensajes: en la cultura china es el número de la suerte.
+const DEFAULT_MONTHLY_LIMIT = Number(process.env.DEFAULT_MONTHLY_LIMIT ?? 8);
 
 export async function POST(request: Request) {
   if (process.env.REGISTRATION_OPEN === 'false') {

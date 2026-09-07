@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MODELS, TASKS } from '@/config/models';
 import { getHistory, saveHistory, clearHistory } from '@/lib/storage';
 import TaskSelector from './TaskSelector';
+import ModelPicker from './ModelPicker';
 import AccountModal from './AccountModal';
 import { ArrowUp, TaskIcon } from './icons';
 
@@ -27,6 +28,7 @@ interface ChatProps {
 
 export default function Chat({ user, initialUsed }: ChatProps) {
   const [selectedTask, setSelectedTask] = useState<string>(TASKS[0].id);
+  const [selectedModel, setSelectedModel] = useState<string>(TASKS[0].models[0]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +40,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
   const endRef = useRef<HTMLDivElement>(null);
 
   const task = TASKS.find((t) => t.id === selectedTask) ?? TASKS[0];
-  const model = MODELS[task.models[0]];
+  const model = MODELS[selectedModel] ?? MODELS[task.models[0]];
   const remaining = Math.max(0, user.monthly_limit - used);
 
   // El historial vive en localStorage, que solo existe en el cliente: se carga
@@ -70,7 +72,9 @@ export default function Chat({ user, initialUsed }: ChatProps) {
   };
 
   const handleTaskSelect = (taskId: string) => {
-    setSelectedTask(taskId);
+    const next = TASKS.find((t) => t.id === taskId) ?? TASKS[0];
+    setSelectedTask(next.id);
+    setSelectedModel(next.models[0]);
     setMessages([]);
     setError('');
     clearHistory(user.id);
@@ -90,7 +94,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taskId: task.id, messages: updatedMessages }),
+        body: JSON.stringify({ taskId: task.id, model: model.id, messages: updatedMessages }),
       });
       const data = await response.json();
 
@@ -131,6 +135,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
       </header>
 
       <TaskSelector selectedTask={selectedTask} onSelectTask={handleTaskSelect} />
+      <ModelPicker task={task} selectedModel={model.id} onSelectModel={setSelectedModel} />
 
       <main className="flex-1 overflow-y-auto">
         {error && (
