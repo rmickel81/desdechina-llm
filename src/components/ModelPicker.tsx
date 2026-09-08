@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   articleUrl,
   COST_LABEL,
@@ -16,29 +15,44 @@ interface ModelPickerProps {
   task: TaskConfig;
   selectedModel: string;
   onSelectModel: (modelId: string) => void;
+  /**
+   * Abierto o cerrado lo lleva el chat, no este componente: el panel se abre
+   * desde dos sitios —esta barra y la ficha de la sección— y con el estado
+   * aquí dentro el segundo no tenía forma de abrirlo.
+   */
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export default function ModelPicker({ task, selectedModel, onSelectModel }: ModelPickerProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function ModelPicker({
+  task,
+  selectedModel,
+  onSelectModel,
+  isOpen,
+  onOpenChange,
+}: ModelPickerProps) {
   const models = modelsForTask(task);
   const current = MODELS[selectedModel] ?? models[0];
 
   return (
     <>
       <div className="border-b border-hairline">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-2">
-          <span className="a-meta text-ink-tertiary">Modelo</span>
+        <div className="mx-auto flex max-w-5xl items-center gap-4 px-5 py-2.5">
+          <span className="a-meta shrink-0 text-ink-tertiary">Modelo</span>
           <button
             type="button"
-            onClick={() => setIsOpen(true)}
+            onClick={() => onOpenChange(true)}
             aria-haspopup="dialog"
-            className="a-meta flex items-center gap-1.5 text-ink-secondary transition-colors hover:text-accent"
+            className="a-selector flex min-w-0 items-center gap-2.5 px-3 py-1.5"
           >
-            {current.name} · {current.provider}
-            <ChevronDown className="size-3.5" />
+            <span className="truncate text-[14px]">{current.name}</span>
+            <span className="hidden shrink-0 text-[14px] text-ink-tertiary sm:inline">
+              · {current.provider}
+            </span>
+            <ChevronDown className="size-4 shrink-0 text-ink-tertiary" />
           </button>
-          <span className="a-meta ml-auto hidden text-ink-tertiary sm:inline">
-            {models.length} disponibles
+          <span className="a-meta ml-auto hidden shrink-0 text-ink-tertiary md:inline">
+            {models.length} para esta tarea
           </span>
         </div>
       </div>
@@ -47,7 +61,7 @@ export default function ModelPicker({ task, selectedModel, onSelectModel }: Mode
         <Panel
           titulo={`Modelo para ${task.name.toLowerCase()}`}
           entradilla="Todos sirven para esta tarea. Cambian el estilo, la velocidad y el coste."
-          onClose={() => setIsOpen(false)}
+          onClose={() => onOpenChange(false)}
           anchoMax="520px"
         >
           {/* Filas separadas por reglas, no tarjetas: la lista se lee como un
@@ -63,7 +77,7 @@ export default function ModelPicker({ task, selectedModel, onSelectModel }: Mode
                       type="button"
                       onClick={() => {
                         onSelectModel(model.id);
-                        setIsOpen(false);
+                        onOpenChange(false);
                       }}
                       aria-pressed={isSelected}
                       className="flex w-full items-start gap-3 py-4 pr-1 text-left"

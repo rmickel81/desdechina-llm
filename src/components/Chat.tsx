@@ -78,6 +78,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isModelosOpen, setIsModelosOpen] = useState(false);
   const [error, setError] = useState('');
   const [imagen, setImagen] = useState<string | null>(null);
   const archivoRef = useRef<HTMLInputElement>(null);
@@ -89,6 +90,12 @@ export default function Chat({ user, initialUsed }: ChatProps) {
   const task = TASKS.find((t) => t.id === selectedTask) ?? TASKS[0];
   const model = MODELS[selectedModel] ?? MODELS[task.models[0]];
   const remaining = Math.max(0, user.monthly_limit - used);
+  // A la cuenta de administrador se le pone un cupo de 100.000 al darse de
+  // alta, que a 8 mensajes al mes de un usuario normal es mil años. Enseñar
+  // esa cifra en la pantalla no informa de nada: lo que dice es que no hay
+  // tope, así que eso es lo que se escribe. La cifra exacta sigue estando en
+  // el panel de la cuenta, que es donde se va a mirar el detalle.
+  const sinTope = user.role === 'admin';
 
   // El historial vive en localStorage, que solo existe en el cliente: se carga
   // tras el montaje para que el HTML del servidor y el del cliente coincidan.
@@ -121,6 +128,13 @@ export default function Chat({ user, initialUsed }: ChatProps) {
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
   };
+
+  // El alto del campo se calculaba solo al escribir; al cargar se quedaba con
+  // el que le diera `rows={1}`, que no tiene por qué coincidir con el que pide
+  // su contenido. Se ajusta también al montar.
+  useEffect(() => {
+    resizeInput();
+  }, []);
 
   const handleTaskSelect = (taskId: string) => {
     const next = TASKS.find((t) => t.id === taskId) ?? TASKS[0];
@@ -207,10 +221,22 @@ export default function Chat({ user, initialUsed }: ChatProps) {
           cabecera no necesita ni `sticky` ni desenfoque detrás. */}
       <header className="shrink-0 border-b border-hairline">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-5">
-          <h1 className="a-display text-[20px]">DesdeChina LLM</h1>
+          {/* La marca lleva a la web pública, que desde dentro de la
+              aplicación no se alcanza de ninguna otra forma. En pestaña nueva:
+              la conversación se queda donde está. */}
+          <h1 className="a-display text-[20px]">
+            <a
+              href="https://desdechina.es"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-accent"
+            >
+              DesdeChina LLM
+            </a>
+          </h1>
           <div className="flex items-center gap-4">
             <span className="a-meta hidden text-ink-tertiary tabular-nums sm:inline">
-              {remaining.toLocaleString('es-ES')} restantes
+              {sinTope ? 'Sin tope' : `${remaining.toLocaleString('es-ES')} restantes`}
             </span>
             {/* El avatar solo no se leía como pulsable: el galón indica que
                 abre un panel, que es donde vive «Cerrar sesión». */}
@@ -232,7 +258,13 @@ export default function Chat({ user, initialUsed }: ChatProps) {
       </header>
 
       <TaskSelector selectedTask={selectedTask} onSelectTask={handleTaskSelect} />
-      <ModelPicker task={task} selectedModel={model.id} onSelectModel={elegirModelo} />
+      <ModelPicker
+        task={task}
+        selectedModel={model.id}
+        onSelectModel={elegirModelo}
+        isOpen={isModelosOpen}
+        onOpenChange={setIsModelosOpen}
+      />
 
       <main className="flex-1 overflow-y-auto">
         {error && (
@@ -261,20 +293,31 @@ export default function Chat({ user, initialUsed }: ChatProps) {
               {task.description}
             </p>
 
-            <dl className="mt-12 max-w-md border-t border-hairline">
-              <div className="flex justify-between gap-4 border-b border-hairline py-3">
-                <dt className="a-meta text-ink-tertiary">Modelo</dt>
-                <dd className="a-meta text-right">
-                  {model.name} · {model.provider}
-                </dd>
+            {/* La fila del modelo se pulsa y abre el mismo panel que la barra
+                de arriba. Es la primera pantalla que ve alguien que entra por
+                primera vez, y sin un «Cambiar» explícito no hay manera de
+                adivinar que el modelo se elige. */}
+            <div className="mt-12 max-w-lg border-t border-hairline">
+              <button
+                type="button"
+                onClick={() => setIsModelosOpen(true)}
+                aria-haspopup="dialog"
+                className="group flex w-full items-center justify-between gap-4 border-b border-hairline py-4 text-left transition-colors hover:border-accent"
+              >
+                <span className="a-meta shrink-0 text-ink-tertiary">Modelo</span>
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="truncate text-[15px]">{model.name}</span>
+                  <span className="a-meta shrink-0 text-accent">Cambiar</span>
+                  <ChevronDown className="size-4 shrink-0 text-accent" />
+                </span>
+              </button>
+              <div className="flex items-center justify-between gap-4 border-b border-hairline py-4">
+                <span className="a-meta text-ink-tertiary">Te quedan</span>
+                <span className="a-meta tabular-nums">
+                  {sinTope ? 'Sin tope' : `${remaining.toLocaleString('es-ES')} mensajes`}
+                </span>
               </div>
-              <div className="flex justify-between gap-4 border-b border-hairline py-3">
-                <dt className="a-meta text-ink-tertiary">Te quedan</dt>
-                <dd className="a-meta text-right tabular-nums">
-                  {remaining.toLocaleString('es-ES')} mensajes
-                </dd>
-              </div>
-            </dl>
+            </div>
           </div>
         ) : (
           <div className="mx-auto max-w-5xl space-y-8 px-5 py-10">
@@ -342,7 +385,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
             </div>
           )}
 
-          <div className="flex items-end gap-2 border border-hairline bg-surface p-2 transition-colors focus-within:border-accent">
+          <div className="a-compositor flex items-end gap-2 border border-hairline bg-surface p-2 transition-colors focus-within:border-accent">
             {model.acceptsImages ? (
               <>
                 <input
@@ -381,7 +424,11 @@ export default function Chat({ user, initialUsed }: ChatProps) {
               placeholder={`Escribe para ${task.name.toLowerCase()}`}
               rows={1}
               aria-label="Mensaje"
-              className="max-h-40 flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-relaxed placeholder:text-ink-tertiary focus:outline-none"
+              /* Interlineado en píxeles enteros y no `leading-relaxed`: a 15px ese
+                 daba 24,375 y la caja del campo medía 40,375. Un alto fraccionario
+                 es lo que hace que un campo se crea desplazable por medio píxel y
+                 saque una barra que no tiene nada que enseñar. */
+              className="max-h-40 flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-[24px] placeholder:text-ink-tertiary focus:outline-none"
             />
             <button
               type="button"

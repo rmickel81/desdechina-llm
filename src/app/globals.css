@@ -343,6 +343,43 @@ body {
   outline: none;
 }
 
+/* El compositor enseña el foco tiñendo su propia regla con `focus-within`, así
+   que el campo de dentro no dibuja además el suyo: se veían dos rectángulos
+   rojos, uno dentro del otro. Sigue habiendo indicador de foco y sigue siendo
+   visible —el borde de acento sobre la superficie da 5,8:1, muy por encima del
+   3:1 que se pide—, solo que uno en vez de dos.
+
+   Va escrito aquí y no se deja al `focus:outline-none` de Tailwind: la regla
+   global de foco es de un solo nombre de clase y la utilidad no siempre le
+   gana. Esto se comprobó en el navegador, no sobre el papel. */
+.a-compositor :focus-visible {
+  outline: none;
+}
+
+/* El campo crece hasta 160px y a partir de ahí se desplaza. Ni entonces pinta
+   barra: dentro de una caja de 1px queda como una avería, y el cursor y la
+   rueda siguen moviéndolo igual. Es lo mismo que hace el índice de secciones. */
+.a-compositor textarea {
+  scrollbar-width: none;
+}
+.a-compositor textarea::-webkit-scrollbar {
+  display: none;
+}
+
+/* El selector de modelo. Estaba escrito en la voz de los metadatos —mono a
+   11px, gris, con un galón pequeño—, o sea que parecía una etiqueta y no algo
+   que se pueda pulsar: quien no supiera de antemano que ahí se elige, no caía.
+   Ahora tiene caja, cuerpo de lectura y una regla que se tiñe al pasar por
+   encima, que es lo que dice "esto es un control". */
+.a-selector {
+  border: 1px solid var(--hairline);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.a-selector:hover {
+  border-color: var(--accent);
+  background: var(--elevated);
+}
+
 /* Panel modal, sin sombra. Los planos se separan por el borde y por la
    luminancia, igual que en el resto de la casa. */
 .a-panel {
