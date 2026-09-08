@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { query, variableDeConexion } from '@/lib/db';
+import { query, queryOne, variableDeConexion } from '@/lib/db';
 
 /**
  * Diagnóstico de la instalación. Sirve para saber, tras desplegar, si la base
@@ -45,9 +45,23 @@ export async function GET() {
         (t) => !filas.some((f) => f.tabla === t),
       );
       if (faltan.length > 0) {
+        // Cuando las tablas se han creado pero la app no las ve, lo que falla
+        // es a DÓNDE conecta: otra base dentro de la misma rama, u otro rol
+        // sin permisos sobre ellas. Se informa de con qué identidad entra
+        // —base, rol y esquema, que no son credenciales— para poder
+        // compararlo con lo que se ve en la consola del proveedor. Solo
+        // aparece mientras hay avería: en cuanto ok es true, no se publica.
+        const contexto = await queryOne<{
+          base: string;
+          usuario: string;
+          esquema: string | null;
+        }>('select current_database() as base, current_user as usuario, current_schema() as esquema');
         problemas.push(
           `Conecta con la base de datos, pero faltan tablas (${faltan.join(', ')}). ` +
-            'Aplica db/schema.sql en el editor SQL de tu proveedor, o ejecuta npm run db:migrate.',
+            `La app entra en la base "${contexto?.base}" como el rol "${contexto?.usuario}", ` +
+            `esquema "${contexto?.esquema ?? 'ninguno'}". Comprueba que el esquema se aplicó ` +
+            'ahí mismo: en el editor SQL de Neon, "select current_database(), current_user" ' +
+            'debe devolver esos dos valores.',
         );
         baseDatos = 'conectada, sin migrar';
       } else {
