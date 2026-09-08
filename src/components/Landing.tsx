@@ -43,17 +43,18 @@ export default function Landing() {
             {modelos.length} modelos · {fabricantes.length} fabricantes · Shenzhen
           </p>
 
-          {/* Los saltos de línea son a mano y no del navegador: un titular de
-              este tamaño no puede partirse donde caiga, y "toda la IA / de
-              China" es donde tiene sentido que respire. */}
+          {/* El salto entre las dos líneas es a mano: un titular de este cuerpo
+              no puede partirse donde caiga el navegador.
+
+              De 768px para arriba son dos líneas. Por debajo, la segunda no
+              cabe y se parte sola, y ahí el espacio duro entre "de" y "China"
+              obliga a que el corte sea "Usa la IA / de China". Sin él quedaba
+              "Usa la IA de / China", con la preposición colgando al final de
+              una línea y una palabra suelta en la siguiente. */}
           <h1 className="b-display mt-8 text-[clamp(2.75rem,12vw,11rem)]">
             Nihao Europa
             <br />
-            <span className="text-[var(--b-acento)]">
-              Usa toda la IA
-              <br />
-              de China
-            </span>
+            <span className="text-[var(--b-acento)]">{'Usa la IA de\u00A0China'}</span>
           </h1>
 
           <div className="mt-14 grid gap-10 border-t border-[var(--b-linea)] pt-8 md:grid-cols-12">
