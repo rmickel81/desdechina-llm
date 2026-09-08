@@ -86,7 +86,8 @@ body {
   /* Ni #000 ni #fff: el off-blanco cremoso es lo que da el acabado caro. */
   --b-fondo: #0a0a0a;
   --b-tinta: #f5f2ee;
-  --b-tenue: #8a8580;
+  /* Subido desde #8a8580: a 11px en mono se quedaba en 5,4:1 y costaba. */
+  --b-tenue: #9d9791;
   --b-linea: rgba(245, 242, 238, 0.14);
   /* El rojo de desdechina.es, en su variante que aguanta el fondo oscuro. */
   --b-acento: #ff5233;
@@ -120,6 +121,41 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--b-tenue);
+}
+
+/* Botones.
+   El acento no sirve de fondo para un botón: sobre #ff5233, el texto oscuro
+   se queda en 6,1:1 y el claro baja a 2,8:1. A 11px en mono con tracking
+   ancho, 6:1 pasa la norma pero cuesta leerlo. Así que la llamada principal
+   es un bloque de tinta sobre el fondo —17,7:1, el máximo— y el acento se
+   reserva para el hover y para la tipografía, que es donde luce. */
+.b-cta {
+  font-size: 12px;
+  background: var(--b-tinta);
+  color: var(--b-fondo);
+  border: 1px solid var(--b-tinta);
+  transition: background-color 180ms var(--b-entrada), color 180ms var(--b-entrada),
+    border-color 180ms var(--b-entrada);
+}
+.b-cta:hover,
+.b-cta:focus-visible {
+  background: var(--b-acento);
+  border-color: var(--b-acento);
+  color: var(--b-fondo);
+  outline: none;
+}
+
+.b-cta-2 {
+  font-size: 12px;
+  border: 1px solid var(--b-linea);
+  color: var(--b-tinta);
+  transition: border-color 180ms var(--b-entrada), color 180ms var(--b-entrada);
+}
+.b-cta-2:hover,
+.b-cta-2:focus-visible {
+  border-color: var(--b-acento);
+  color: var(--b-acento);
+  outline: none;
 }
 
 /* Grano: rompe la planitud del plano de color. Al 4%, casi imperceptible. */

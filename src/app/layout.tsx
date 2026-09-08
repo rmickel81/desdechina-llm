@@ -37,6 +37,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className={`${inter.variable} ${fraunces.variable} ${mono.variable}`}>
+      <head>
+        {/* Sin JavaScript nadie levanta la cortina de entrada, así que sin
+            JavaScript no se pinta. El contenido va debajo y queda intacto. */}
+        <noscript>
+          <style>{`[data-preloader]{display:none!important}`}</style>
+        </noscript>
+      </head>
       <body className="font-sans">{children}</body>
     </html>
   );

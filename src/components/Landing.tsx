@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { MODELS, TASKS, formatContext, modelsForTask } from '@/config/models';
+import Preloader from './Preloader';
 
 // Cifras del propio catálogo: si mañana entra un modelo, la portada lo dice
 // sola. Escribirlas a mano es garantizar que algún día mientan.
@@ -17,6 +18,7 @@ const cinta = [...modelos, ...modelos];
 export default function Landing() {
   return (
     <div className="brutal b-grano min-h-dvh">
+      <Preloader />
       <header className="sticky top-0 z-50 border-b border-[var(--b-linea)] bg-[var(--b-fondo)]/85 backdrop-blur-md">
         <div className="flex items-center justify-between px-[var(--b-margen)] py-4">
           <span className="b-meta !text-[var(--b-tinta)]">DesdeChina LLM</span>
@@ -26,7 +28,7 @@ export default function Landing() {
             </Link>
             <Link
               href="/registro"
-              className="b-meta border border-[var(--b-tinta)] px-4 py-2 !text-[var(--b-tinta)] transition-colors hover:border-[var(--b-acento)] hover:bg-[var(--b-acento)] hover:!text-[var(--b-fondo)]"
+              className="b-meta b-cta px-4 py-2"
             >
               Crear cuenta
             </Link>
@@ -58,7 +60,7 @@ export default function Landing() {
             <div className="md:col-span-4 md:col-start-9">
               <Link
                 href="/registro"
-                className="b-meta inline-block border border-[var(--b-acento)] bg-[var(--b-acento)] px-6 py-4 !text-[var(--b-fondo)] transition-colors hover:bg-transparent hover:!text-[var(--b-acento)]"
+                className="b-meta b-cta inline-block px-6 py-4"
               >
                 Empezar — {CUOTA} mensajes gratis
               </Link>
@@ -183,13 +185,13 @@ export default function Landing() {
           <div className="mt-12 flex flex-wrap gap-4">
             <Link
               href="/registro"
-              className="b-meta border border-[var(--b-acento)] bg-[var(--b-acento)] px-6 py-4 !text-[var(--b-fondo)] transition-colors hover:bg-transparent hover:!text-[var(--b-acento)]"
+              className="b-meta b-cta px-6 py-4"
             >
               Crear cuenta
             </Link>
             <a
               href="https://desdechina.es/modelos"
-              className="b-meta border border-[var(--b-linea)] px-6 py-4 !text-[var(--b-tinta)] transition-colors hover:border-[var(--b-tinta)]"
+              className="b-meta b-cta-2 px-6 py-4"
             >
               Leer las fichas ↗
             </a>

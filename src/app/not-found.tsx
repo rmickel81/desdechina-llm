@@ -21,13 +21,13 @@ export default function NoEncontrada() {
       <div className="flex flex-wrap gap-4 border-t border-[var(--b-linea)] pt-8">
         <Link
           href="/"
-          className="b-meta border border-[var(--b-acento)] bg-[var(--b-acento)] px-6 py-4 !text-[var(--b-fondo)] transition-colors hover:bg-transparent hover:!text-[var(--b-acento)]"
+          className="b-meta b-cta px-6 py-4"
         >
           Volver a la portada
         </Link>
         <a
           href="https://desdechina.es/modelos"
-          className="b-meta border border-[var(--b-linea)] px-6 py-4 !text-[var(--b-tinta)] transition-colors hover:border-[var(--b-tinta)]"
+          className="b-meta b-cta-2 px-6 py-4"
         >
           Las fichas de los modelos ↗
         </a>
