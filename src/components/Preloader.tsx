@@ -11,6 +11,14 @@ import { useEffect, useState } from 'react';
  * Va marcado con `data-preloader` y el <noscript> del layout lo oculta: sin
  * JavaScript no se queda una cortina encima del contenido para siempre.
  */
+/**
+ * Mínimo que la cortina permanece, en milisegundos. Sin él, con las fuentes en
+ * caché se iba de 0 a 100 sin que diera tiempo a verla, y la cortina es un
+ * gesto de la marca, no solo una espera técnica. Con él, la entrada se lee
+ * siempre y sigue esperando a las fuentes si tardan más de esto.
+ */
+const DURACION = 1400;
+
 export default function Preloader() {
   const [fuera, setFuera] = useState(false);
   const [pct, setPct] = useState(0);
@@ -20,6 +28,7 @@ export default function Preloader() {
 
     let vivo = true;
     const arranque = performance.now();
+    let fuentesListas = false;
 
     // El contador sigue a las fuentes, pero nunca se planta: sube solo hasta
     // el 90% y el último tramo lo da la carga real. Un contador que llega a
@@ -29,21 +38,34 @@ export default function Preloader() {
       ? 0
       : window.setInterval(() => {
           if (!vivo) return;
-          const t = Math.min((performance.now() - arranque) / 900, 1);
-          setPct(Math.round(t * 90));
-        }, 40);
+          const t = Math.min((performance.now() - arranque) / DURACION, 1);
+          // Mientras las fuentes no estén, se frena en 96 en vez de clavarse
+          // en 100: un contador parado en el tope parece que se ha colgado.
+          setPct(Math.round(t * (fuentesListas ? 100 : 96)));
+          if (t >= 1 && fuentesListas) terminar();
+        }, 32);
 
     const terminar = () => {
       if (!vivo) return;
       window.clearInterval(tic);
       setPct(100);
-      window.setTimeout(() => vivo && setFuera(true), menosMovimiento ? 0 : 380);
+      window.setTimeout(() => vivo && setFuera(true), menosMovimiento ? 0 : 300);
+    };
+
+    // Cuando llegan las fuentes: si ya se ha cumplido el mínimo, fuera; si no,
+    // el intervalo la levantará al llegar. Así el gesto se ve siempre y aun
+    // así nunca se enseña la portada con la tipografía a medio cargar.
+    const cuandoLleguenLasFuentes = () => {
+      fuentesListas = true;
+      if (performance.now() - arranque >= DURACION) terminar();
     };
 
     // Tope de seguridad: pase lo que pase con las fuentes, a los 2,5 s se
     // levanta. Nadie se queda mirando una cortina por un fallo de red.
-    const tope = window.setTimeout(terminar, menosMovimiento ? 0 : 2500);
-    if (!menosMovimiento) document.fonts.ready.then(terminar).catch(terminar);
+    const tope = window.setTimeout(terminar, menosMovimiento ? 0 : 3000);
+    if (!menosMovimiento) {
+      document.fonts.ready.then(cuandoLleguenLasFuentes).catch(cuandoLleguenLasFuentes);
+    }
 
     return () => {
       vivo = false;
