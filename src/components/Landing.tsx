@@ -1,138 +1,219 @@
 import Link from 'next/link';
-import { MODELS, TASKS, modelsForTask } from '@/config/models';
-import { ArrowUpRight, TaskIcon } from './icons';
+import { MODELS, TASKS, formatContext, modelsForTask } from '@/config/models';
 
 // Cifras del propio catálogo: si mañana entra un modelo, la portada lo dice
 // sola. Escribirlas a mano es garantizar que algún día mientan.
-const totalModelos = Object.keys(MODELS).length;
-const conImagenes = Object.values(MODELS).filter((m) => m.acceptsImages).length;
-const fabricantes = new Set(Object.values(MODELS).map((m) => m.provider)).size;
+const modelos = Object.values(MODELS);
+const fabricantes = [...new Set(modelos.map((m) => m.provider))].sort();
+const conImagenes = modelos.filter((m) => m.acceptsImages).length;
+const mayorContexto = Math.max(...modelos.map((m) => m.contextTokens));
 
 const CUOTA = Number(process.env.DEFAULT_MONTHLY_LIMIT ?? 8);
 
+// La cinta se repite dos veces y se desplaza un 50%: así el bucle no tiene
+// costura. Los nombres son los de verdad, no relleno.
+const cinta = [...modelos, ...modelos];
+
 export default function Landing() {
   return (
-    <div className="min-h-dvh bg-canvas text-ink">
-      <header className="border-b border-hairline">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <span className="text-[17px] font-semibold tracking-tight">DesdeChina LLM</span>
-          <Link
-            href="/entrar"
-            className="text-[14px] text-ink-secondary transition-colors hover:text-ink"
-          >
-            Entrar
-          </Link>
+    <div className="brutal b-grano min-h-dvh">
+      <header className="sticky top-0 z-50 border-b border-[var(--b-linea)] bg-[var(--b-fondo)]/85 backdrop-blur-md">
+        <div className="flex items-center justify-between px-[var(--b-margen)] py-4">
+          <span className="b-meta !text-[var(--b-tinta)]">DesdeChina LLM</span>
+          <nav className="flex items-center gap-6">
+            <Link href="/entrar" className="b-meta transition-colors hover:!text-[var(--b-tinta)]">
+              Entrar
+            </Link>
+            <Link
+              href="/registro"
+              className="b-meta border border-[var(--b-tinta)] px-4 py-2 !text-[var(--b-tinta)] transition-colors hover:border-[var(--b-acento)] hover:bg-[var(--b-acento)] hover:!text-[var(--b-fondo)]"
+            >
+              Crear cuenta
+            </Link>
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6">
-        <section className="pt-20 pb-16 sm:pt-28 sm:pb-20">
-          <h1 className="max-w-[16ch] text-[clamp(2.5rem,6vw,4rem)] leading-[1.05] font-semibold tracking-tight">
-            Los modelos de IA china, sin montarte nada.
-          </h1>
-          <p className="mt-6 max-w-[52ch] text-[19px] leading-relaxed text-ink-secondary">
-            {totalModelos} modelos de {fabricantes} fabricantes —DeepSeek, Alibaba,
-            Moonshot, Z.AI, MiniMax, Tencent y más—, agrupados por lo que quieres
-            hacer. Eliges la tarea, no el modelo.
+      <main>
+        {/* ---------------------------------------------------- HERO */}
+        <section className="px-[var(--b-margen)] pt-[clamp(4rem,12vh,9rem)] pb-[var(--b-seccion)]">
+          <p className="b-meta">
+            {modelos.length} modelos · {fabricantes.length} fabricantes · Shenzhen
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-4">
-            <Link
-              href="/registro"
-              className="rounded-full bg-accent px-6 py-3 text-[16px] font-medium text-accent-ink transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
-            >
-              Crear cuenta gratis
-            </Link>
-            <span className="text-[14px] text-ink-tertiary">
-              {CUOTA} mensajes al mes. Sin tarjeta.
-            </span>
+
+          <h1 className="b-display mt-8 text-[clamp(3rem,12vw,11rem)]">
+            No elijas
+            <br />
+            modelo.
+            <br />
+            <span className="text-[var(--b-acento)]">Elige tarea.</span>
+          </h1>
+
+          <div className="mt-14 grid gap-10 border-t border-[var(--b-linea)] pt-8 md:grid-cols-12">
+            <p className="max-w-[46ch] text-[17px] leading-relaxed text-[var(--b-tinta)]/75 md:col-span-6">
+              DeepSeek, Qwen, Kimi, GLM, MiniMax, Hunyuan. Todos cuestan
+              céntimos y ninguno se parece al de al lado. Aquí están ordenados
+              por lo que quieres hacer, no por quién los fabrica.
+            </p>
+            <div className="md:col-span-4 md:col-start-9">
+              <Link
+                href="/registro"
+                className="b-meta inline-block border border-[var(--b-acento)] bg-[var(--b-acento)] px-6 py-4 !text-[var(--b-fondo)] transition-colors hover:bg-transparent hover:!text-[var(--b-acento)]"
+              >
+                Empezar — {CUOTA} mensajes gratis
+              </Link>
+              <p className="b-meta mt-4">Sin tarjeta. Sin clave propia.</p>
+            </div>
           </div>
         </section>
 
-        <section className="border-t border-hairline py-16" aria-labelledby="tareas">
-          <h2 id="tareas" className="text-[13px] font-medium tracking-wide text-ink-tertiary uppercase">
-            Para qué
-          </h2>
-          <ul className="mt-8 grid gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
-            {TASKS.map((task) => (
-              <li key={task.id}>
-                <TaskIcon name={task.icon} className="size-5 text-ink-tertiary" />
-                <h3 className="mt-3 text-[16px] font-medium">{task.name}</h3>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-ink-secondary">
-                  {task.description}
-                </p>
-                <p className="mt-2 text-[13px] text-ink-tertiary">
-                  {modelsForTask(task).length} modelos ·{' '}
-                  {MODELS[task.models[0]]?.name} por defecto
-                </p>
-              </li>
+        {/* ------------------------------------- CINTA DE MODELOS */}
+        <section
+          aria-label={`Los ${modelos.length} modelos del catálogo`}
+          className="overflow-hidden border-y border-[var(--b-linea)] py-5"
+        >
+          <div className="b-cinta">
+            {cinta.map((m, i) => (
+              <span key={`${m.id}-${i}`} className="b-meta flex shrink-0 items-center gap-4 px-6">
+                {m.name}
+                <span className="text-[var(--b-acento)]">◆</span>
+              </span>
             ))}
-          </ul>
+          </div>
         </section>
 
-        <section className="border-t border-hairline py-16" aria-labelledby="como">
-          <h2 id="como" className="text-[13px] font-medium tracking-wide text-ink-tertiary uppercase">
-            Cómo funciona
+        {/* ---------------------------------- ÍNDICE DE TAREAS */}
+        <section className="pt-[var(--b-seccion)]" aria-labelledby="indice">
+          <div className="flex items-end justify-between px-[var(--b-margen)] pb-10">
+            <h2 id="indice" className="b-display text-[clamp(2rem,5vw,4rem)]">
+              El índice
+            </h2>
+            <p className="b-meta hidden sm:block">/ {String(TASKS.length).padStart(2, '0')}</p>
+          </div>
+
+          <ul>
+            {TASKS.map((task, i) => {
+              const suyos = modelsForTask(task);
+              const porDefecto = MODELS[task.models[0]];
+              return (
+                <li key={task.id}>
+                  <Link href="/registro" className="b-fila b-entra">
+                    <div className="flex flex-wrap items-baseline gap-x-8 gap-y-2 px-[var(--b-margen)] py-7">
+                      <span className="b-num b-meta !text-inherit w-10 shrink-0">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <span className="b-display flex-1 text-[clamp(1.75rem,4.5vw,3.25rem)]">
+                        {task.name}
+                      </span>
+                      <span className="b-tenue b-meta">
+                        {suyos.length} modelos · {porDefecto?.name}
+                      </span>
+                      <span className="b-flecha text-[1.5rem] leading-none">→</span>
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="border-t border-[var(--b-linea)]" />
+        </section>
+
+        {/* --------------------------------------------- CIFRAS */}
+        <section className="px-[var(--b-margen)] py-[var(--b-seccion)]" aria-labelledby="cifras">
+          <h2 id="cifras" className="b-meta">
+            Lo que hay
           </h2>
-          <dl className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-3">
-            <div>
-              <dt className="text-[16px] font-medium">La clave la pongo yo</dt>
-              <dd className="mt-1.5 text-[14px] leading-relaxed text-ink-secondary">
-                No tienes que darte de alta en OpenRouter ni pagar nada. Creas
-                cuenta con tu correo y escribes.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[16px] font-medium">{CUOTA} mensajes al mes</dt>
-              <dd className="mt-1.5 text-[14px] leading-relaxed text-ink-secondary">
-                Ocho, que en China es el número de la suerte. Suficiente para
-                probar en serio y ver si te sirve.
-              </dd>
-            </div>
-            <div>
-              <dt className="text-[16px] font-medium">Tus conversaciones son tuyas</dt>
-              <dd className="mt-1.5 text-[14px] leading-relaxed text-ink-secondary">
-                Se guardan solo en tu navegador. En el servidor queda cuántos
-                mensajes has gastado, no lo que has escrito.
-              </dd>
-            </div>
+          <dl className="mt-10 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { n: modelos.length, t: 'Modelos', d: 'Todos verificados contra el catálogo de OpenRouter.' },
+              { n: fabricantes.length, t: 'Fabricantes', d: fabricantes.slice(0, 5).join(', ') + '…' },
+              { n: conImagenes, t: 'Ven imágenes', d: 'Adjuntas una captura y preguntas por ella.' },
+              { n: formatContext(mayorContexto), t: 'De contexto', d: 'El mayor del catálogo. Un expediente entero de una vez.' },
+            ].map((c) => (
+              <div key={c.t} className="b-entra border-t border-[var(--b-linea)] pt-5">
+                <dt className="b-display text-[clamp(3rem,7vw,5rem)] text-[var(--b-acento)]">
+                  {c.n}
+                </dt>
+                <dd className="mt-2">
+                  <span className="b-meta !text-[var(--b-tinta)]">{c.t}</span>
+                  <p className="mt-2 max-w-[28ch] text-[14px] leading-relaxed text-[var(--b-tinta)]/60">
+                    {c.d}
+                  </p>
+                </dd>
+              </div>
+            ))}
           </dl>
         </section>
 
-        <section className="border-t border-hairline py-16" aria-labelledby="saber">
-          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-            <div className="max-w-[46ch]">
-              <h2 id="saber" className="text-[24px] font-semibold tracking-tight">
-                Y si quieres saber cuál elegir
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink-secondary">
-                Cada modelo tiene su ficha en desdechina.es: qué hace bien, dónde
-                se queda corto, cuándo elegirlo y cuándo no. Sin rankings y sin
-                listas de moda. {conImagenes} de los {totalModelos} aceptan
-                imágenes.
-              </p>
-            </div>
+        {/* ----------------------------------------- CÓMO VA */}
+        <section
+          className="border-t border-[var(--b-linea)] px-[var(--b-margen)] py-[var(--b-seccion)]"
+          aria-labelledby="como"
+        >
+          <h2 id="como" className="b-meta">
+            Cómo va
+          </h2>
+          <ol className="mt-10 grid gap-12 md:grid-cols-3">
+            {[
+              ['01', 'La clave la pongo yo', 'No te das de alta en OpenRouter ni pagas nada. Correo, contraseña y a escribir.'],
+              ['02', `${CUOTA} mensajes al mes`, 'Ocho, que en China es el número de la suerte. Bastan para probar en serio.'],
+              ['03', 'Lo que escribes es tuyo', 'Las conversaciones se quedan en tu navegador. En el servidor solo queda cuántos mensajes gastaste.'],
+            ].map(([n, t, d]) => (
+              <li key={n} className="b-entra">
+                <span className="b-meta text-[var(--b-acento)]">{n}</span>
+                <h3 className="b-display mt-3 text-[clamp(1.4rem,2.5vw,1.9rem)]">{t}</h3>
+                <p className="mt-3 max-w-[34ch] text-[15px] leading-relaxed text-[var(--b-tinta)]/65">
+                  {d}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* -------------------------------------------- CIERRE */}
+        <section className="border-t border-[var(--b-linea)] px-[var(--b-margen)] py-[var(--b-seccion)]">
+          <h2 className="b-display max-w-[14ch] text-[clamp(2.5rem,8vw,7rem)]">
+            ¿No sabes cuál usar?
+          </h2>
+          <p className="mt-8 max-w-[52ch] text-[17px] leading-relaxed text-[var(--b-tinta)]/70">
+            Cada modelo tiene su ficha en desdechina.es: qué hace bien, dónde se
+            queda corto, cuándo elegirlo y cuándo no. Escritas a mano, una por
+            una, sin rankings ni listas de moda.
+          </p>
+          <div className="mt-12 flex flex-wrap gap-4">
+            <Link
+              href="/registro"
+              className="b-meta border border-[var(--b-acento)] bg-[var(--b-acento)] px-6 py-4 !text-[var(--b-fondo)] transition-colors hover:bg-transparent hover:!text-[var(--b-acento)]"
+            >
+              Crear cuenta
+            </Link>
             <a
               href="https://desdechina.es/modelos"
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-hairline px-5 py-2.5 text-[15px] font-medium transition-colors hover:bg-elevated"
+              className="b-meta border border-[var(--b-linea)] px-6 py-4 !text-[var(--b-tinta)] transition-colors hover:border-[var(--b-tinta)]"
             >
-              Ver las fichas
-              <ArrowUpRight className="size-4" />
+              Leer las fichas ↗
             </a>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-hairline">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-[13px] text-ink-tertiary">
-          <span>
-            Hecho en Shenzhen por{' '}
-            <a href="https://desdechina.es" className="text-ink-secondary hover:text-ink">
-              Desde China
+      <footer className="border-t border-[var(--b-linea)] px-[var(--b-margen)] py-10">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="b-display text-[clamp(1.5rem,3vw,2.25rem)]">DesdeChina LLM</p>
+            <p className="b-meta mt-2">Shenzhen · 22°32′N 114°03′E</p>
+          </div>
+          <div className="flex flex-wrap gap-x-8 gap-y-2">
+            <a href="https://desdechina.es" className="b-meta transition-colors hover:!text-[var(--b-acento)]">
+              Desde China ↗
             </a>
-          </span>
-          <Link href="/entrar" className="hover:text-ink">
-            Ya tengo cuenta
-          </Link>
+            <a href="https://desdechina.es/modelos" className="b-meta transition-colors hover:!text-[var(--b-acento)]">
+              Las fichas ↗
+            </a>
+            <Link href="/entrar" className="b-meta transition-colors hover:!text-[var(--b-acento)]">
+              Entrar
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

@@ -75,3 +75,139 @@ body {
     opacity: 0.5;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/*  Portada                                                            */
+/*  Brutalismo editorial: oscuro con un acento, tipografía monumental,  */
+/*  retícula visible. Va todo dentro de .brutal para que no se filtre   */
+/*  a la aplicación, que es y sigue siendo limpia al estilo Apple.      */
+/* ------------------------------------------------------------------ */
+.brutal {
+  /* Ni #000 ni #fff: el off-blanco cremoso es lo que da el acabado caro. */
+  --b-fondo: #0a0a0a;
+  --b-tinta: #f5f2ee;
+  --b-tenue: #8a8580;
+  --b-linea: rgba(245, 242, 238, 0.14);
+  /* El rojo de desdechina.es, en su variante que aguanta el fondo oscuro. */
+  --b-acento: #ff5233;
+
+  --b-margen: clamp(1.25rem, 5vw, 6rem);
+  --b-seccion: clamp(6rem, 14vh, 14rem);
+  --b-entrada: cubic-bezier(0.16, 1, 0.3, 1);
+
+  background: var(--b-fondo);
+  color: var(--b-tinta);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.brutal ::selection {
+  background: var(--b-acento);
+  color: var(--b-fondo);
+}
+
+/* Voz DISPLAY: el titular es la imagen de la página. */
+.b-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-weight: 600;
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+}
+
+/* Voz META: mono, versalitas, 11–13px SIEMPRE. Nunca en titulares. */
+.b-meta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--b-tenue);
+}
+
+/* Grano: rompe la planitud del plano de color. Al 4%, casi imperceptible. */
+.b-grano::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Índice de tareas: el mecanismo de firma ---------------------- */
+/* La fila entera se invierte y el numeral se desplaza. Solo transform y
+   color: nada de animar alto, ancho ni posición. */
+.b-fila {
+  position: relative;
+  display: block;
+  border-top: 1px solid var(--b-linea);
+  transition: background-color 200ms var(--b-entrada), color 200ms var(--b-entrada);
+}
+.b-fila:hover,
+.b-fila:focus-visible {
+  background: var(--b-acento);
+  color: var(--b-fondo);
+  outline: none;
+}
+.b-fila:hover .b-num,
+.b-fila:focus-visible .b-num {
+  transform: translateX(0.35em);
+  opacity: 1;
+}
+/* Sobre el acento, los metadatos van en tinta sólida. En translúcido daban
+   un rojo oscuro sobre rojo, ilegible: la jerarquía ya la marca el tamaño,
+   no hace falta bajar además el contraste. */
+.b-fila:hover .b-tenue,
+.b-fila:focus-visible .b-tenue {
+  color: var(--b-fondo);
+}
+.b-fila:hover .b-flecha,
+.b-fila:focus-visible .b-flecha {
+  transform: translateX(0) rotate(0deg);
+  opacity: 1;
+}
+.b-num {
+  transition: transform 250ms var(--b-entrada), opacity 250ms var(--b-entrada);
+  opacity: 0.45;
+}
+.b-flecha {
+  transition: transform 250ms var(--b-entrada), opacity 250ms var(--b-entrada);
+  transform: translateX(-0.6em);
+  opacity: 0;
+}
+
+/* --- Cinta infinita con los 30 modelos ---------------------------- */
+.b-cinta {
+  display: flex;
+  width: max-content;
+  animation: b-desliza 60s linear infinite;
+}
+@keyframes b-desliza {
+  to { transform: translateX(-50%); }
+}
+
+/* Entradas al scroll con CSS nativo: sin librería y sin JS. Donde el
+   navegador no lo soporta simplemente no hay animación, y se ve igual. */
+/* Entradas al scroll con CSS nativo: sin librería y sin JS.
+   Solo se anima `transform`, nunca la opacidad: con `opacity` en los
+   fotogramas, si la línea de tiempo no llega a avanzar —captura a página
+   completa, scroll restaurado a media página, un contenedor que no
+   desplaza— el contenido se queda invisible. El texto no puede depender de
+   que una animación se ejecute para poder leerse. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .b-entra {
+      animation: b-aparece linear forwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+@keyframes b-aparece {
+  from { transform: translateY(26px); }
+  to   { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b-cinta { animation: none; }
+  .b-fila, .b-num, .b-flecha { transition: none; }
+}
