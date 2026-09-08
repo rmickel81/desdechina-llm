@@ -7,9 +7,11 @@ import pg from 'pg';
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = readFileSync(join(here, '..', 'db', 'schema.sql'), 'utf8');
 
-const connectionString = process.env.DATABASE_URL;
+// Mismos nombres que acepta la app (src/lib/db.ts): la integración de Neon en
+// Vercel inyecta la cadena como POSTGRES_URL según la versión.
+const connectionString = process.env.DATABASE_URL ?? process.env.POSTGRES_URL;
 if (!connectionString) {
-  console.error('Falta DATABASE_URL.');
+  console.error('Falta la cadena de conexión: ni DATABASE_URL ni POSTGRES_URL.');
   process.exit(1);
 }
 

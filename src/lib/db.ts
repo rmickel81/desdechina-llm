@@ -18,12 +18,35 @@ export function sslFor(connectionString: string): { rejectUnauthorized: boolean 
   return isLocal ? undefined : { rejectUnauthorized: true };
 }
 
+/**
+ * Nombres bajo los que puede llegar la cadena de conexión, en orden de
+ * preferencia. `DATABASE_URL` es la que documenta el .env.example, pero la
+ * integración de Neon en Vercel inyecta la suya como `POSTGRES_URL` según la
+ * versión, y entonces la app no la encontraba aunque estuviera puesta.
+ *
+ * Solo cadenas agrupadas (pooled): en serverless cada petición abre conexión,
+ * y las variantes `_UNPOOLED` / `_NON_POOLING` agotan el servidor.
+ */
+const VARIABLES_DE_CONEXION = ['DATABASE_URL', 'POSTGRES_URL'] as const;
+
+/** El nombre de la variable que trae la conexión, o null si no hay ninguna. */
+export function variableDeConexion(): string | null {
+  return VARIABLES_DE_CONEXION.find((n) => process.env[n]?.trim()) ?? null;
+}
+
+export function connectionString(): string | null {
+  const nombre = variableDeConexion();
+  return nombre ? (process.env[nombre] as string) : null;
+}
+
 function createPool(): Pool {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error('Falta la variable de entorno DATABASE_URL.');
+  const cadena = connectionString();
+  if (!cadena) {
+    throw new Error(
+      `Falta la cadena de conexión. Se ha buscado en: ${VARIABLES_DE_CONEXION.join(', ')}.`,
+    );
   }
-  return new Pool({ connectionString, max: 5, ssl: sslFor(connectionString) });
+  return new Pool({ connectionString: cadena, max: 5, ssl: sslFor(cadena) });
 }
 
 export function getPool(): Pool {

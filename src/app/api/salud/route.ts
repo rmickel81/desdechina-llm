@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { query, variableDeConexion } from '@/lib/db';
 
 /**
  * Diagnóstico de la instalación. Sirve para saber, tras desplegar, si la base
@@ -18,8 +18,15 @@ export async function GET() {
   }
 
   let baseDatos = 'sin comprobar';
-  if (!process.env.DATABASE_URL) {
-    problemas.push('Falta la variable DATABASE_URL.');
+  // Se informa del NOMBRE de la variable encontrada, nunca de su valor: esta
+  // ruta es pública y la cadena lleva usuario y contraseña dentro.
+  const variable = variableDeConexion();
+  if (!variable) {
+    problemas.push(
+      'No hay cadena de conexión. Se ha buscado en DATABASE_URL y POSTGRES_URL. ' +
+        'Si acabas de añadirla en Vercel, vuelve a desplegar: las variables solo ' +
+        'entran en despliegues nuevos.',
+    );
     baseDatos = 'sin configurar';
   } else {
     try {
@@ -35,7 +42,7 @@ export async function GET() {
       if (faltan.length > 0) {
         problemas.push(
           `Conecta con la base de datos, pero faltan tablas (${faltan.join(', ')}). ` +
-            'Aplica el esquema con: DATABASE_URL="..." npm run db:migrate',
+            'Aplica db/schema.sql en el editor SQL de tu proveedor, o ejecuta npm run db:migrate.',
         );
         baseDatos = 'conectada, sin migrar';
       } else {
@@ -44,7 +51,7 @@ export async function GET() {
     } catch (error) {
       // El detalle va al log del servidor; al exterior, solo que no conecta.
       console.error('Comprobación de salud: fallo al conectar con la base de datos', error);
-      problemas.push('No se puede conectar con la base de datos. Revisa DATABASE_URL.');
+      problemas.push(`No se puede conectar con la base de datos. Revisa ${variable}.`);
       baseDatos = 'sin conexión';
     }
   }
@@ -54,6 +61,8 @@ export async function GET() {
     {
       ok,
       baseDatos,
+      // Nombre de la variable, nunca su valor.
+      variableDeConexion: variable ?? 'ninguna',
       claveOpenRouter: process.env.OPENROUTER_API_KEY ? 'puesta' : 'ausente',
       problemas,
     },
