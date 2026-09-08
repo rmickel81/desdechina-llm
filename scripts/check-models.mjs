@@ -36,7 +36,7 @@ let catalogo;
 try {
   const response = await fetch('https://openrouter.ai/api/v1/models');
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  catalogo = new Set((await response.json()).data.map((m) => m.id));
+  catalogo = new Map((await response.json()).data.map((m) => [m.id, m]));
 } catch (error) {
   console.warn(`No se ha podido consultar OpenRouter (${error.message}). Se omite la comprobación.`);
   process.exit(0);
@@ -49,5 +49,33 @@ if (faltan.length > 0) {
   console.error('\nCorrígelos en src/config/models.ts antes de desplegar.');
   process.exit(1);
 }
+
+// Un modelo declarado que ninguna tarea ofrece no se puede elegir en la
+// aplicación, y su enlace a la ficha no lo ve nadie: es peso muerto.
+const sinTarea = declared.filter((id) => !referenced.includes(id));
+if (sinTarea.length > 0) {
+  console.error('Modelos declarados que ninguna sección ofrece:');
+  for (const id of sinTarea) console.error('  ✗', id);
+  console.error('\nAñádelos a una tarea o quítalos de MODELS.');
+  process.exit(1);
+}
+
+// La franja de coste se escribe a mano y los precios de OpenRouter se mueven:
+// siguen al proveedor por defecto de cada modelo, que cambia. Aquí solo se
+// avisa —un cambio de precio ajeno no debe tumbar un despliegue—, pero el
+// aviso es la señal de que toca repasar la franja en models.ts.
+const franja = (salida) => (salida < 0.6 ? 'economico' : salida <= 2 ? 'equilibrado' : 'premium');
+const tiers = new Map(
+  [...source.matchAll(/^ {2}"([^"]+)": \{[\s\S]*?tier: "([^"]+)"/gm)].map((m) => [m[1], m[2]]),
+);
+
+const desajustadas = [];
+for (const [id, tier] of tiers) {
+  const salida = Number(catalogo.get(id)?.pricing?.completion) * 1e6;
+  if (!Number.isFinite(salida)) continue;
+  const hoy = franja(salida);
+  if (hoy !== tier) desajustadas.push(`${id}: tier "${tier}", hoy el precio lo pone en "${hoy}"`);
+}
+for (const aviso of desajustadas) console.warn('  aviso —', aviso);
 
 console.log(`Los ${declared.length} modelos existen en OpenRouter.`);

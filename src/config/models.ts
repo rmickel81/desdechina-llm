@@ -105,9 +105,9 @@ export const MODELS: Record<string, ModelConfig> = {
     name: "GLM 4.6",
     provider: "Z.AI",
     description:
-      "La evolución del 4.5: más contexto y más barato. Cómodo para documentos largos sin irse de precio.",
+      "La evolución del 4.5: bastante más contexto por un precio parecido. Cómodo para documentos largos.",
     contextTokens: 204_800,
-    tier: "equilibrado",
+    tier: "premium",
     slug: "glm-4-6"
   },
   "z-ai/glm-5": {
@@ -282,6 +282,7 @@ export const TASKS: TaskConfig[] = [
       "deepseek/deepseek-chat",
       "qwen/qwen-plus",
       "z-ai/glm-4.5",
+      "qwen/qwen3-32b",
       "inclusionai/ling-3.0-flash"
     ]
   },
