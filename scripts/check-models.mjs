@@ -78,4 +78,39 @@ for (const [id, tier] of tiers) {
 }
 for (const aviso of desajustadas) console.warn('  aviso —', aviso);
 
+// Que un ID exista no significa que siga siendo el actual de su casa. Este
+// catálogo llegó a servir DeepSeek V3 y Kimi K2 con V4 y K3 ya publicados,
+// porque solo se comprobaba la existencia. Aquí se avisa cuando un fabricante
+// ha publicado algo más nuevo que lo que ofrecemos de esa misma familia.
+const MESES_DE_GRACIA = 3;
+const limite = Date.now() / 1000 - MESES_DE_GRACIA * 30 * 24 * 3600;
+const familia = (id) => id.split('/')[0];
+const nuestrasFamilias = new Set(declared.map(familia));
+
+const atrasadas = [];
+for (const casa of nuestrasFamilias) {
+  const mios = declared.filter((id) => familia(id) === casa);
+  const masNuevoNuestro = Math.max(...mios.map((id) => catalogo.get(id)?.created ?? 0));
+  // Las variantes con ':' (":free", ":batch"…) son la misma cosa con otra
+  // tarifa, no una generación nueva.
+  // Se compara contra el más nuevo YA ASENTADO, no contra el último de todos:
+  // si solo se mirara el último, un lanzamiento de esta semana silenciaría el
+  // aviso y taparía que servimos algo de hace un año. Lo recién salido se deja
+  // pasar a propósito; lo que lleva meses publicado, no.
+  const asentados = [...catalogo.values()]
+    .filter((m) => familia(m.id) === casa && !m.id.includes(':') && m.created < limite)
+    .sort((a, b) => b.created - a.created);
+  const referencia = asentados[0];
+  if (!referencia) continue;
+  // Un hermano publicado el mismo día o la misma semana no es una generación
+  // atrasada, es una variante: sin este margen, casas con muchas variantes
+  // avisan siempre y el aviso deja de leerse. Las brechas reales son de meses.
+  const MARGEN_DIAS = 45;
+  if (referencia.created > masNuevoNuestro + MARGEN_DIAS * 24 * 3600) {
+    const fecha = new Date(referencia.created * 1000).toISOString().slice(0, 10);
+    atrasadas.push(`${casa}: ofrecemos algo anterior a ${referencia.id} (${fecha})`);
+  }
+}
+for (const aviso of atrasadas) console.warn('  aviso —', aviso);
+
 console.log(`Los ${declared.length} modelos existen en OpenRouter.`);

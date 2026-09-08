@@ -1,9 +1,18 @@
 // Cliente de OpenRouter. Solo se usa desde el servidor: la clave es de la
 // instalación, nunca del navegador, y por eso no debe importarse en un
 // componente de cliente.
+/**
+ * Un mensaje puede ser texto suelto o una lista de partes cuando lleva
+ * imagen. OpenRouter usa aquí el mismo formato que la API de OpenAI: la
+ * imagen viaja como `data:` URL dentro de `image_url`.
+ */
+export type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } };
+
 export interface OpenRouterMessage {
   role: 'user' | 'assistant';
-  content: string;
+  content: string | ContentPart[];
 }
 
 interface OpenRouterResponse {

@@ -128,6 +128,26 @@ export function Close({ className }: IconProps) {
   );
 }
 
+function Image({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3.5" y="5" width="17" height="14" rx="2.5" />
+      <circle cx="9" cy="10" r="1.6" />
+      <path d="M4 17l4.5-4.5a1.8 1.8 0 0 1 2.5 0L15 16.5" />
+      <path d="M14 15l1.8-1.8a1.8 1.8 0 0 1 2.5 0L20.5 15.5" />
+    </svg>
+  );
+}
+
+// Clip: adjuntar imagen en el chat.
+export function Clip({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M17 8.5l-6.9 6.9a2.6 2.6 0 0 0 3.7 3.7l7.1-7.1a4.4 4.4 0 0 0-6.2-6.2l-7.1 7.1a6.2 6.2 0 0 0 8.8 8.8l4.1-4.1" />
+    </svg>
+  );
+}
+
 const TASK_ICONS = {
   pencil: Pencil,
   code: Code,
@@ -136,6 +156,7 @@ const TASK_ICONS = {
   globe: Globe,
   calculator: Calculator,
   presentation: Presentation,
+  image: Image,
 } as const;
 
 export type TaskIconName = keyof typeof TASK_ICONS;

@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { getCurrentUser, getMonthlyUsage } from '@/lib/auth';
-import { createCompletion, OpenRouterError, type OpenRouterMessage } from '@/lib/openrouter';
-import { TASKS } from '@/config/models';
+import {
+  createCompletion,
+  OpenRouterError,
+  type ContentPart,
+  type OpenRouterMessage,
+} from '@/lib/openrouter';
+import { MODELS, TASKS } from '@/config/models';
+import { revisarImagen } from '@/lib/imagen';
 
 // Topes de la petición. La clave la paga la instalación, así que conviene
 // acotar cuánto contexto puede mandar un usuario en cada mensaje.
@@ -20,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Petición no válida.' }, { status: 400 });
   }
 
-  const { taskId, model: requestedModel, messages } = body as Record<string, unknown>;
+  const { taskId, model: requestedModel, messages, image } = body as Record<string, unknown>;
 
   const task = TASKS.find((t) => t.id === taskId);
   if (!task) {
@@ -39,6 +45,26 @@ export async function POST(request: Request) {
       { error: 'Ese modelo no está disponible en esta sección.' },
       { status: 400 },
     );
+  }
+
+  // La imagen solo se admite si el modelo elegido la acepta: mandársela a uno
+  // que no la acepta es un error de la API y una llamada pagada y tirada.
+  let imagen: string | null = null;
+  if (image !== undefined && image !== null) {
+    if (typeof image !== 'string') {
+      return NextResponse.json({ error: 'La imagen no es válida.' }, { status: 400 });
+    }
+    if (!MODELS[model]?.acceptsImages) {
+      return NextResponse.json(
+        { error: 'Este modelo no admite imágenes. Elige otro en la lista.' },
+        { status: 400 },
+      );
+    }
+    const problema = revisarImagen(image);
+    if (problema) {
+      return NextResponse.json({ error: problema }, { status: 400 });
+    }
+    imagen = image;
   }
 
   if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) {
@@ -60,6 +86,21 @@ export async function POST(request: Request) {
       );
     }
     clean.push({ role, content });
+  }
+
+  // La imagen acompaña al último mensaje, que es el que acaba de escribir el
+  // usuario; los anteriores van como texto para no reenviar imágenes viejas
+  // en cada turno (se pagan cada vez que se mandan).
+  if (imagen) {
+    const ultimo = clean[clean.length - 1];
+    if (!ultimo || ultimo.role !== 'user' || typeof ultimo.content !== 'string') {
+      return NextResponse.json({ error: 'La conversación no es válida.' }, { status: 400 });
+    }
+    const partes: ContentPart[] = [
+      { type: 'text', text: ultimo.content },
+      { type: 'image_url', image_url: { url: imagen } },
+    ];
+    clean[clean.length - 1] = { role: 'user', content: partes };
   }
 
   const used = await getMonthlyUsage(user.id);
