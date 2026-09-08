@@ -7,6 +7,11 @@ import { query, variableDeConexion } from '@/lib/db';
  *
  * No devuelve ningún valor de configuración: solo si está o no está.
  */
+// Esta ruta es un diagnóstico: nunca debe servirse cacheada, ni por el CDN ni
+// por el navegador, o se acaba mirando el estado de hace dos despliegues.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   const problemas: string[] = [];
 
@@ -61,11 +66,14 @@ export async function GET() {
     {
       ok,
       baseDatos,
-      // Nombre de la variable, nunca su valor.
+      // Nombres de variables, nunca sus valores.
       variableDeConexion: variable ?? 'ninguna',
       claveOpenRouter: process.env.OPENROUTER_API_KEY ? 'puesta' : 'ausente',
       problemas,
     },
-    { status: ok ? 200 : 503 },
+    {
+      status: ok ? 200 : 503,
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    },
   );
 }
