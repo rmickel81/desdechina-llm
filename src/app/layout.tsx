@@ -26,8 +26,12 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'DesdeChina LLM',
+  // Esta frase es la que sale en Google y la que se pega al compartir el
+  // enlace, y decía justo lo contrario de lo que hace la aplicación: que hace
+  // falta una clave propia de OpenRouter. No hace falta ninguna; la pone la
+  // instalación. Con cuenta de correo y contraseña basta.
   description:
-    'Trabaja con los mejores modelos de IA china usando tu propia API key de OpenRouter',
+    'Los mejores modelos de IA china, ordenados por lo que quieres hacer y no por quién los fabrica. Sin darte de alta en OpenRouter y sin poner tarjeta.',
 };
 
 export default function RootLayout({

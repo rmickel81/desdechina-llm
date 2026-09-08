@@ -43,12 +43,17 @@ export default function Landing() {
             {modelos.length} modelos · {fabricantes.length} fabricantes · Shenzhen
           </p>
 
-          <h1 className="b-display mt-8 text-[clamp(3rem,12vw,11rem)]">
-            No elijas
+          {/* Los saltos de línea son a mano y no del navegador: un titular de
+              este tamaño no puede partirse donde caiga, y "toda la IA / de
+              China" es donde tiene sentido que respire. */}
+          <h1 className="b-display mt-8 text-[clamp(2.75rem,12vw,11rem)]">
+            Nihao Europa
             <br />
-            modelo.
-            <br />
-            <span className="text-[var(--b-acento)]">Elige tarea.</span>
+            <span className="text-[var(--b-acento)]">
+              Usa toda la IA
+              <br />
+              de China
+            </span>
           </h1>
 
           <div className="mt-14 grid gap-10 border-t border-[var(--b-linea)] pt-8 md:grid-cols-12">
