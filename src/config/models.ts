@@ -1,5 +1,3 @@
-import type { TaskIconName } from "@/components/icons";
-
 // Base de los artículos del blog. Cada modelo enlaza a su ficha en la web
 // pública; si cambia la estructura de URLs, se cambia aquí y en ningún otro
 // sitio. Un modelo sin `slug` simplemente no muestra enlace: es lo que pasa
@@ -37,8 +35,13 @@ export interface ModelConfig {
 export interface TaskConfig {
   id: string;
   name: string;
+  /**
+   * Cómo se llama en la barra de secciones. Los ocho nombres completos no
+   * caben de una vez en pantalla y dos secciones quedaban fuera del borde
+   * sin que nada avisara de que había que desplazar.
+   */
+  shortName: string;
   description: string;
-  icon: TaskIconName;
   /** El primero de la lista es el que se usa por defecto en esta sección. */
   models: string[];
 }
@@ -385,8 +388,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "general",
     name: "Redacción general",
+    shortName: "Redacción",
     description: "Escribir artículos, correos, informes o contenido general.",
-    icon: "pencil",
     models: [
       "deepseek/deepseek-v4-flash",
       "deepseek/deepseek-v4-pro",
@@ -399,8 +402,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "programacion",
     name: "Programación",
+    shortName: "Programación",
     description: "Escribir, revisar y depurar código.",
-    icon: "code",
     models: [
       "qwen/qwen3-coder-next",
       "bytedance-seed/seed-2-1-turbo",
@@ -414,8 +417,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "analisis",
     name: "Análisis de documentos",
+    shortName: "Análisis",
     description: "Resumir informes largos, contratos o actas y buscar datos dentro.",
-    icon: "document",
     models: [
       "z-ai/glm-5.3-flash",
       "deepseek/deepseek-v4-flash",
@@ -428,8 +431,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "creatividad",
     name: "Creatividad y diseño",
+    shortName: "Creatividad",
     description: "Nombres, eslóganes, guiones y textos donde el tono es el encargo.",
-    icon: "sparkle",
     models: [
       "minimax/minimax-m3",
       "minimax/minimax-m2-her",
@@ -440,8 +443,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "traduccion",
     name: "Traducción",
+    shortName: "Traducción",
     description: "Traducir, sobre todo del chino, con nombres propios y cargos correctos.",
-    icon: "globe",
     models: [
       "tencent/hy-mt2-30b-a3b",
       "tencent/hy-mt2-7b",
@@ -453,8 +456,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "calculo",
     name: "Cálculo y razonamiento",
+    shortName: "Cálculo",
     description: "Problemas con varias etapas, lógica encadenada y casos límite.",
-    icon: "calculator",
     models: [
       "deepseek/deepseek-v4-pro",
       "qwen/qwen3-max-thinking",
@@ -465,8 +468,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "presentaciones",
     name: "Presentaciones",
+    shortName: "Presentaciones",
     description: "Estructurar el guion de una presentación a partir de tu material.",
-    icon: "presentation",
     models: [
       "qwen/qwen3.8-flash",
       "z-ai/glm-5.3-flash",
@@ -477,8 +480,8 @@ export const TASKS: TaskConfig[] = [
   {
     id: "imagenes",
     name: "Imágenes y visión",
+    shortName: "Imágenes",
     description: "Adjuntar una imagen y preguntar por ella: leerla, describirla o sacar sus datos.",
-    icon: "image",
     models: [
       "z-ai/glm-5.3-flash",
       "xiaomi/mimo-v2.5",
@@ -509,8 +512,11 @@ export const COST_LABEL: Record<CostTier, string> = {
 /** 262144 → "262k", 1000000 → "1M" */
 export function formatContext(tokens: number): string {
   if (tokens >= 1_000_000) {
-    const millions = tokens / 1_000_000;
-    return `${millions % 1 === 0 ? millions : millions.toFixed(1)}M`;
+    // Un decimal, y con la coma española. 1.048.576 tokens son "1 M" y no
+    // "1.0M": el cero decimal no dice nada y el punto decimal es de otro
+    // idioma. La ficha del modelo dice "1,3 millones" y esto decía "1.3M".
+    const millones = Math.round(tokens / 100_000) / 10;
+    return `${millones.toLocaleString('es-ES')} M`;
   }
-  return `${Math.round(tokens / 1000)}k`;
+  return `${Math.round(tokens / 1000)} k`;
 }

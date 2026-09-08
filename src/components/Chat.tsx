@@ -6,7 +6,7 @@ import { getHistory, saveHistory, clearHistory } from '@/lib/storage';
 import TaskSelector from './TaskSelector';
 import ModelPicker from './ModelPicker';
 import AccountModal from './AccountModal';
-import { ArrowUp, ChevronDown, Clip, Close, TaskIcon } from './icons';
+import { ArrowUp, ChevronDown, Clip, Close } from './icons';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,6 +17,8 @@ interface Message {
    * en tres mensajes.
    */
   image?: string;
+  /** Nombre del modelo que respondió. Solo en los del asistente. */
+  model?: string;
 }
 
 // Lado mayor al que se reduce la imagen antes de mandarla. Los modelos de
@@ -104,7 +106,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
     // Sin la imagen: en base64 llenaría el localStorage en tres mensajes.
     saveHistory(
       user.id,
-      messages.map(({ role, content }) => ({ role, content })),
+      messages.map(({ role, content, model }) => ({ role, content, model })),
     );
   }, [messages, user.id]);
 
@@ -186,7 +188,7 @@ export default function Chat({ user, initialUsed }: ChatProps) {
         return;
       }
 
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.content }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.content, model: model.name }]);
       setUsed(data.usage.used);
     } catch {
       setError('Sin conexión con el servidor. Comprueba tu red.');
@@ -195,14 +197,20 @@ export default function Chat({ user, initialUsed }: ChatProps) {
     }
   };
 
+  const indice = TASKS.findIndex((t) => t.id === task.id);
+
   return (
-    <div className="flex h-dvh flex-col bg-canvas text-ink">
-      <header className="sticky top-0 z-10 border-b border-hairline bg-canvas/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-5">
-          <h1 className="text-[17px] font-semibold tracking-tight">DesdeChina LLM</h1>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-[12px] tabular-nums text-ink-tertiary sm:inline">
-              {remaining} restantes
+    // El grano es el mismo de la portada: al 4% no se ve, pero quita a los
+    // planos de color esa planitud de pantalla que delata lo barato.
+    <div className="b-grano flex h-dvh flex-col bg-canvas text-ink">
+      {/* Nada de esta zona hace scroll: solo lo hace la conversación. La
+          cabecera no necesita ni `sticky` ni desenfoque detrás. */}
+      <header className="shrink-0 border-b border-hairline">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-5">
+          <h1 className="a-display text-[20px]">DesdeChina LLM</h1>
+          <div className="flex items-center gap-4">
+            <span className="a-meta hidden text-ink-tertiary tabular-nums sm:inline">
+              {remaining.toLocaleString('es-ES')} restantes
             </span>
             {/* El avatar solo no se leía como pulsable: el galón indica que
                 abre un panel, que es donde vive «Cerrar sesión». */}
@@ -212,9 +220,9 @@ export default function Chat({ user, initialUsed }: ChatProps) {
               aria-label="Tu cuenta y cerrar sesión"
               title="Tu cuenta"
               aria-haspopup="dialog"
-              className="flex items-center gap-1 rounded-full bg-elevated py-1 pr-2 pl-1 text-[13px] font-medium text-ink-secondary transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+              className="a-boton-2 flex items-center gap-1.5 py-1.5 pr-2 pl-1.5 text-ink-secondary"
             >
-              <span className="grid size-6 place-items-center rounded-full bg-hairline text-[12px]">
+              <span className="grid size-6 place-items-center bg-elevated font-mono text-[12px]">
                 {(user.name || user.email).charAt(0).toUpperCase()}
               </span>
               <ChevronDown className="size-3.5" />
@@ -228,10 +236,10 @@ export default function Chat({ user, initialUsed }: ChatProps) {
 
       <main className="flex-1 overflow-y-auto">
         {error && (
-          <div className="mx-auto mt-4 max-w-3xl px-5">
+          <div className="mx-auto mt-6 max-w-5xl px-5">
             <p
               role="alert"
-              className="rounded-xl border border-hairline bg-elevated px-4 py-3 text-[13px] leading-relaxed text-ink-secondary"
+              className="border-l-2 border-accent bg-elevated px-4 py-3 text-[14px] leading-relaxed"
             >
               {error}
             </p>
@@ -239,51 +247,76 @@ export default function Chat({ user, initialUsed }: ChatProps) {
         )}
 
         {messages.length === 0 && !isLoading ? (
-          <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-            <TaskIcon name={task.icon} className="size-8 text-ink-tertiary" />
-            <h2 className="mt-5 text-[26px] font-semibold tracking-tight">{task.name}</h2>
-            <p className="mt-2 max-w-sm text-[15px] leading-relaxed text-ink-secondary">
+          /* La pantalla de inicio, alineada a la izquierda y con el numeral
+             gigante de la sección. Centrada en medio de un lienzo negro solo
+             parecía una pantalla a medio cargar; así es la portada de la
+             sección en la que estás y dice de un vistazo dónde estás y con
+             qué modelo vas a hablar. */
+          <div className="mx-auto max-w-5xl px-5 py-14">
+            <p className="a-display text-[clamp(4rem,11vw,8rem)] leading-[0.8] text-accent">
+              {String(indice + 1).padStart(2, '0')}
+            </p>
+            <h2 className="a-display mt-6 text-[clamp(1.75rem,4vw,2.75rem)]">{task.name}</h2>
+            <p className="mt-4 max-w-[46ch] text-[16px] leading-relaxed text-ink-secondary">
               {task.description}
             </p>
-            <p className="mt-6 text-[12px] text-ink-tertiary">
-              {model.name} · {model.provider}
-            </p>
+
+            <dl className="mt-12 max-w-md border-t border-hairline">
+              <div className="flex justify-between gap-4 border-b border-hairline py-3">
+                <dt className="a-meta text-ink-tertiary">Modelo</dt>
+                <dd className="a-meta text-right">
+                  {model.name} · {model.provider}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-4 border-b border-hairline py-3">
+                <dt className="a-meta text-ink-tertiary">Te quedan</dt>
+                <dd className="a-meta text-right tabular-nums">
+                  {remaining.toLocaleString('es-ES')} mensajes
+                </dd>
+              </div>
+            </dl>
           </div>
         ) : (
-          <div className="mx-auto max-w-3xl space-y-6 px-5 py-8">
+          <div className="mx-auto max-w-5xl space-y-8 px-5 py-10">
             {messages.map((msg, index) =>
               msg.role === 'user' ? (
-                <div key={index} className="flex flex-col items-end gap-1.5">
+                <div key={index} className="flex flex-col items-end gap-2">
+                  <p className="a-meta text-ink-tertiary">Tú</p>
                   {msg.image && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={msg.image}
                       alt="Imagen adjunta"
-                      className="max-h-64 max-w-[80%] rounded-[20px] border border-hairline object-contain"
+                      className="max-h-64 max-w-[34rem] border border-hairline object-contain"
                     />
                   )}
-                  <p className="max-w-[80%] rounded-[20px] bg-accent px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap text-accent-ink">
+                  {/* La tinta oscura sobre el acento da 6,1:1. A los 15px de un
+                      mensaje pasa de sobra; por eso el acento sí puede ser
+                      fondo aquí y no lo es en un metadato de 11px. */}
+                  <p className="max-w-[34rem] bg-accent px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap text-accent-ink">
                     {msg.content}
                   </p>
                 </div>
               ) : (
-                <p key={index} className="text-[15px] leading-[1.65] whitespace-pre-wrap text-ink">
-                  {msg.content}
-                </p>
+                /* La regla a la izquierda hace de margen del cuaderno, y la
+                   etiqueta dice qué modelo contestó: dentro de una sección se
+                   puede cambiar a media conversación y luego no hay manera de
+                   saber quién dijo qué. */
+                <div key={index} className="border-l-2 border-hairline pl-5">
+                  {msg.model && <p className="a-meta mb-2 text-ink-tertiary">{msg.model}</p>}
+                  <p className="max-w-[70ch] text-[16px] leading-[1.7] whitespace-pre-wrap">
+                    {msg.content}
+                  </p>
+                </div>
               ),
             )}
 
             {isLoading && (
-              <div className="flex gap-1.5 py-1" aria-label="Generando respuesta">
-                <span className="typing-dot size-1.5 rounded-full bg-ink-tertiary" />
-                <span
-                  className="typing-dot size-1.5 rounded-full bg-ink-tertiary"
-                  style={{ animationDelay: '0.15s' }}
-                />
-                <span
-                  className="typing-dot size-1.5 rounded-full bg-ink-tertiary"
-                  style={{ animationDelay: '0.3s' }}
-                />
+              <div className="border-l-2 border-accent pl-5">
+                <p className="a-meta text-ink-tertiary" aria-label="Generando respuesta">
+                  {model.name} está escribiendo
+                  <span className="a-cursor ml-1 inline-block h-[0.9em] w-[0.5em] translate-y-[0.08em] bg-accent" />
+                </p>
               </div>
             )}
             <div ref={endRef} />
@@ -291,27 +324,25 @@ export default function Chat({ user, initialUsed }: ChatProps) {
         )}
       </main>
 
-      <div className="border-t border-hairline bg-canvas/80 px-5 pt-3 pb-4 backdrop-blur-xl">
-        <div className="mx-auto max-w-3xl">
+      <div className="shrink-0 border-t border-hairline pt-4 pb-5">
+        <div className="mx-auto max-w-5xl px-5">
           {imagen && (
-            <div className="mb-2 flex items-center gap-3 rounded-2xl border border-hairline bg-surface p-2">
+            <div className="mb-2 flex items-center gap-3 border border-hairline bg-surface p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imagen} alt="" className="size-12 rounded-lg object-cover" />
-              <span className="flex-1 text-[13px] text-ink-secondary">
-                Se enviará con tu mensaje
-              </span>
+              <img src={imagen} alt="" className="size-12 object-cover" />
+              <span className="a-meta flex-1 text-ink-secondary">Se enviará con tu mensaje</span>
               <button
                 type="button"
                 onClick={descartarImagen}
                 aria-label="Quitar la imagen"
-                className="flex size-7 items-center justify-center rounded-full text-ink-tertiary transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+                className="flex size-8 items-center justify-center text-ink-tertiary transition-colors hover:text-accent"
               >
                 <Close className="size-4" />
               </button>
             </div>
           )}
 
-          <div className="flex items-end gap-2 rounded-[22px] border border-hairline bg-surface py-2 pr-2 pl-2 transition-colors focus-within:border-accent/40">
+          <div className="flex items-end gap-2 border border-hairline bg-surface p-2 transition-colors focus-within:border-accent">
             {model.acceptsImages ? (
               <>
                 <input
@@ -326,13 +357,13 @@ export default function Chat({ user, initialUsed }: ChatProps) {
                   onClick={() => archivoRef.current?.click()}
                   aria-label="Adjuntar una imagen"
                   title="Adjuntar una imagen"
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full text-ink-tertiary transition-colors hover:bg-elevated hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+                  className="flex size-9 shrink-0 items-center justify-center text-ink-tertiary transition-colors hover:bg-elevated hover:text-ink"
                 >
                   <Clip className="size-[18px]" />
                 </button>
               </>
             ) : (
-              <span className="w-2" />
+              <span className="w-1" />
             )}
             <textarea
               ref={inputRef}
@@ -350,20 +381,20 @@ export default function Chat({ user, initialUsed }: ChatProps) {
               placeholder={`Escribe para ${task.name.toLowerCase()}`}
               rows={1}
               aria-label="Mensaje"
-              className="max-h-40 flex-1 resize-none bg-transparent py-1.5 text-[15px] leading-relaxed placeholder:text-ink-tertiary focus:outline-none"
+              className="max-h-40 flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-relaxed placeholder:text-ink-tertiary focus:outline-none"
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
               aria-label="Enviar"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-ink transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-25"
+              className="a-boton flex size-9 shrink-0 items-center justify-center"
             >
               <ArrowUp className="size-[17px]" />
             </button>
           </div>
-          <p className="mt-2.5 text-center text-[11px] text-ink-tertiary">
-            Las conversaciones se guardan solo en este navegador.
+          <p className="a-meta mt-3 text-ink-tertiary">
+            Las conversaciones se guardan solo en este navegador
           </p>
         </div>
       </div>

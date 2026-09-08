@@ -3,6 +3,14 @@
 export interface StoredMessage {
   role: 'user' | 'assistant';
   content: string;
+  /**
+   * Nombre del modelo que respondió. Solo en los mensajes del asistente y
+   * solo para pintarlo: dentro de una misma sección se puede cambiar de
+   * modelo a media conversación, y sin esta etiqueta no hay forma de saber
+   * después cuál contestó a qué. Ocupa unas decenas de bytes, así que sí
+   * cabe en el historial —la imagen adjunta no, y por eso esa se descarta—.
+   */
+  model?: string;
 }
 
 const historyKey = (userId: string) => `chat_history:${userId}`;

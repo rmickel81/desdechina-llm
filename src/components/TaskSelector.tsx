@@ -1,21 +1,25 @@
 'use client';
 
 import { TASKS } from '@/config/models';
-import { TaskIcon } from './icons';
 
 interface TaskSelectorProps {
   selectedTask: string;
   onSelectTask: (taskId: string) => void;
 }
 
+/**
+ * El índice de las ocho secciones. Es el mismo gesto que en la portada —los
+ * numerales 01…08 y una regla debajo— reducido a una barra de navegación.
+ *
+ * Los iconos se han ido: el numeral ya identifica la sección, ocupa menos y
+ * es lo que ata esta pantalla con la portada. Un icono al lado del texto no
+ * añadía información, solo ruido de otra casa.
+ */
 export default function TaskSelector({ selectedTask, onSelectTask }: TaskSelectorProps) {
   return (
-    <nav
-      aria-label="Tipo de tarea"
-      className="border-b border-hairline bg-canvas/80 backdrop-blur-xl"
-    >
-      <div className="mx-auto flex max-w-3xl gap-1.5 overflow-x-auto px-5 py-2.5 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:overflow-x-visible [&::-webkit-scrollbar]:hidden">
-        {TASKS.map((task) => {
+    <nav aria-label="Tipo de tarea" className="border-b border-hairline">
+      <div className="a-indice mx-auto flex max-w-5xl overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {TASKS.map((task, i) => {
           const isSelected = selectedTask === task.id;
           return (
             <button
@@ -23,14 +27,19 @@ export default function TaskSelector({ selectedTask, onSelectTask }: TaskSelecto
               type="button"
               onClick={() => onSelectTask(task.id)}
               aria-pressed={isSelected}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+              /* La regla inferior es siempre de 2px, transparente cuando no
+                 está elegida: si apareciera solo al elegir, la fila entera
+                 daría un salto de dos píxeles en cada cambio. */
+              className={`group flex shrink-0 items-baseline gap-2 border-b-2 px-3.5 py-3 whitespace-nowrap transition-colors first:pl-0 ${
                 isSelected
-                  ? 'bg-ink text-canvas'
-                  : 'text-ink-secondary hover:bg-elevated hover:text-ink'
+                  ? 'border-accent text-ink'
+                  : 'border-transparent text-ink-tertiary hover:text-ink'
               }`}
             >
-              <TaskIcon name={task.icon} className="size-[15px]" />
-              {task.name}
+              <span className={`a-num ${isSelected ? 'text-accent' : 'text-ink-tertiary'}`}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="text-[13px]">{task.shortName}</span>
             </button>
           );
         })}

@@ -56,20 +56,22 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Indicador de "escribiendo", al estilo de Mensajes */
-@keyframes typing-dot {
-  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
-  30% { opacity: 1; transform: translateY(-2px); }
+/* Indicador de "escribiendo". Los tres puntitos al estilo Mensajes se han
+   ido: aquí es un cursor de bloque parpadeando detrás del nombre del modelo,
+   que dice además QUIÉN está escribiendo. Con `steps(1)` parpadea de golpe,
+   como un terminal, en vez de desvanecerse. */
+@keyframes a-parpadeo {
+  0%, 45%   { opacity: 1; }
+  55%, 100% { opacity: 0; }
 }
 
-.typing-dot {
-  animation: typing-dot 1.2s infinite ease-in-out;
+.a-cursor {
+  animation: a-parpadeo 1s steps(1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .typing-dot {
+  .a-cursor {
     animation: none;
-    opacity: 0.5;
   }
 }
 
@@ -243,4 +245,150 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .b-cinta { animation: none; }
   .b-fila, .b-num, .b-flecha { transition: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Aplicación                                                         */
+/*  La misma casa que la portada, pero pensada para estar dentro un     */
+/*  rato largo. Del brutalismo se queda lo que no cansa —esquinas       */
+/*  rectas, reglas de 1px, numerales, la voz mono en los metadatos— y   */
+/*  se deja fuera lo que sí —tipografía monumental en cada rincón,      */
+/*  hover que invierte bloques enteros—. El cuerpo de la conversación   */
+/*  no se toca: Inter a 16px con interlineado ancho, que es lo que se   */
+/*  lee sin esfuerzo en un texto largo.                                 */
+/* ------------------------------------------------------------------ */
+
+/* Foco visible, escrito una sola vez para toda la aplicación. Antes cada
+   botón repetía tres utilidades y el anillo salía translúcido sobre fondo
+   oscuro, o sea casi invisible. Un contorno sólido de acento se ve
+   siempre y vive en un único sitio. La portada no se entera: sus piezas
+   ya traen su propio `outline: none` con un tratamiento propio. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Voz META: mono, versalitas, 11px. La misma que en la portada, y aquí
+   manda en todo lo que no es conversación: contadores, nombre del modelo,
+   etiquetas de quién habla. */
+.a-meta {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Voz DISPLAY, para títulos de pantalla y de panel. Interlineado algo más
+   suelto que en la portada: aquí los títulos son de una o dos líneas y no
+   ocupan media pantalla. */
+.a-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+/* Llamada principal, con el mismo razonamiento que en la portada: bloque
+   de tinta sobre el fondo, y el acento reservado al hover. Sobre #ff5233
+   la tinta oscura da 6,1:1 —de sobra para 15px, justo para los 11px de un
+   metadato—, así que el acento nunca es fondo de algo pequeño. */
+.a-boton {
+  /* 12px, no los 11 de `.a-meta`: estos botones llevan casi siempre las dos
+     clases juntas y una llamada principal a 11px se queda corta. Funciona
+     porque esta regla va después en la hoja. */
+  font-size: 12px;
+  background: var(--ink);
+  color: var(--canvas);
+  border: 1px solid var(--ink);
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+.a-boton:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.a-boton:disabled {
+  background: transparent;
+  color: var(--ink-tertiary);
+  border-color: var(--hairline);
+}
+
+/* Secundario: solo contorno. */
+.a-boton-2 {
+  font-size: 12px;
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  transition: border-color 180ms ease, color 180ms ease;
+}
+.a-boton-2:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.a-boton-2:disabled {
+  color: var(--ink-tertiary);
+}
+
+/* Campos. Esquina recta y una regla de 1px que se tiñe al enfocar: el
+   propio campo es el indicador, sin sombras ni anillos. */
+.a-campo {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  transition: border-color 160ms ease;
+}
+.a-campo::placeholder {
+  color: var(--ink-tertiary);
+}
+.a-campo:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Panel modal, sin sombra. Los planos se separan por el borde y por la
+   luminancia, igual que en el resto de la casa. */
+.a-panel {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+}
+
+/* Numerales del índice de tareas, en el chat igual que en la portada. */
+/* Índice de secciones. Con los nombres cortos entra entero por encima de
+   980px; por debajo se desplaza, y hay que avisar de que queda barra fuera.
+   El degradado del borde derecho lo dice.
+
+   La gracia está en CUÁNDO aparece. Con una media query habría que clavar el
+   ancho exacto a mano y el aviso saldría en pantallas donde no falta nada.
+   Con una línea de tiempo de scroll no hace falta: si el elemento no se
+   desplaza, la línea de tiempo está inactiva y la animación no se aplica —o
+   sea, no hay degradado—; en cuanto se desplaza, aparece. Los fotogramas son
+   los dos iguales a propósito: esto no anima nada, solo enciende un estilo
+   cuando hay desbordamiento.
+
+   Se pinta con máscara y no con una capa encima para que el fondo pueda ser
+   cualquiera. Donde no haya `animation-timeline` no hay degradado, y la barra
+   se desplaza igual: es una pista, no un control. */
+@supports (animation-timeline: scroll()) {
+  .a-indice {
+    animation: a-indice-borde linear both;
+    animation-timeline: scroll(self inline);
+  }
+}
+/* El contorno de foco, por dentro. El índice recorta lo que se sale (es un
+   contenedor que se desplaza), y un contorno con desplazamiento hacia fuera
+   se veía partido por arriba y por abajo: quedaban dos barras sueltas a los
+   lados, que parece una avería y no un indicador de foco. */
+.a-indice :focus-visible {
+  outline-offset: -2px;
+}
+
+@keyframes a-indice-borde {
+  from, to {
+    mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+  }
+}
+
+.a-num {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
 }

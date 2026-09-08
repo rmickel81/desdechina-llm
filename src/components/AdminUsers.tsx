@@ -38,22 +38,22 @@ export default function AdminUsers({ initialUsers }: { initialUsers: AdminUserRo
       {error && (
         <p
           role="alert"
-          className="mb-4 rounded-xl border border-hairline bg-elevated px-4 py-3 text-[13px] text-ink-secondary"
+          className="mb-6 border-l-2 border-accent bg-elevated px-4 py-3 text-[14px]"
         >
           {error}
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-hairline bg-surface">
+      <div className="overflow-x-auto border border-hairline bg-surface">
         <table className="w-full min-w-[720px] text-left text-[14px]">
           <thead>
-            <tr className="border-b border-hairline text-[12px] font-medium text-ink-secondary">
-              <th className="px-4 py-3">Usuario</th>
-              <th className="px-4 py-3">Alta</th>
-              <th className="px-4 py-3">Último acceso</th>
-              <th className="px-4 py-3">Uso del mes</th>
-              <th className="px-4 py-3">Límite</th>
-              <th className="px-4 py-3">Estado</th>
+            <tr className="border-b border-hairline">
+              <th className="a-meta px-4 py-3 text-ink-tertiary">Usuario</th>
+              <th className="a-meta px-4 py-3 text-ink-tertiary">Alta</th>
+              <th className="a-meta px-4 py-3 text-ink-tertiary">Último acceso</th>
+              <th className="a-meta px-4 py-3 text-ink-tertiary">Uso del mes</th>
+              <th className="a-meta px-4 py-3 text-ink-tertiary">Límite</th>
+              <th className="a-meta px-4 py-3 text-ink-tertiary">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -63,7 +63,7 @@ export default function AdminUsers({ initialUsers }: { initialUsers: AdminUserRo
                   <span className="block font-medium">{user.name || '—'}</span>
                   <span className="block text-[12px] text-ink-secondary">{user.email}</span>
                   {user.role === 'admin' && (
-                    <span className="mt-1 inline-block rounded-full bg-elevated px-2 py-0.5 text-[11px] text-ink-secondary">
+                    <span className="a-meta mt-1.5 inline-block border border-hairline px-2 py-0.5 text-ink-tertiary">
                       Administrador
                     </span>
                   )}
@@ -84,7 +84,7 @@ export default function AdminUsers({ initialUsers }: { initialUsers: AdminUserRo
                         patch(user.id, { monthly_limit: value });
                       }
                     }}
-                    className="w-24 rounded-lg border border-hairline bg-canvas px-2.5 py-1.5 text-[14px] tabular-nums outline-none focus:border-accent/50"
+                    className="a-campo w-24 px-2.5 py-1.5 font-mono text-[14px] tabular-nums"
                   />
                 </td>
                 <td className="px-4 py-3">
@@ -94,7 +94,7 @@ export default function AdminUsers({ initialUsers }: { initialUsers: AdminUserRo
                     onClick={() =>
                       patch(user.id, { status: user.status === 'active' ? 'suspended' : 'active' })
                     }
-                    className="rounded-full bg-elevated px-3.5 py-1.5 text-[13px] font-medium transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-50"
+                    className="a-meta a-boton-2 px-3.5 py-2"
                   >
                     {user.status === 'active' ? 'Suspender' : 'Reactivar'}
                   </button>
@@ -106,7 +106,7 @@ export default function AdminUsers({ initialUsers }: { initialUsers: AdminUserRo
       </div>
 
       {users.length === 0 && (
-        <p className="mt-6 text-center text-[14px] text-ink-secondary">Todavía no hay usuarios.</p>
+        <p className="mt-6 text-[14px] text-ink-secondary">Todavía no hay usuarios.</p>
       )}
     </div>
   );

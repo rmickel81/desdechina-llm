@@ -28,19 +28,34 @@ export default async function AdminPage() {
   return (
     <div className="min-h-dvh bg-canvas text-ink">
       <header className="border-b border-hairline">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <h1 className="text-[17px] font-semibold tracking-tight">Usuarios</h1>
-          <Link href="/" className="text-[14px] text-accent transition-opacity hover:opacity-80">
-            Volver al chat
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-6">
+          <h1 className="a-display text-[20px]">Usuarios</h1>
+          <Link href="/" className="a-meta text-accent transition-opacity hover:opacity-70">
+            ← Volver al chat
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-8">
-        <p className="mb-6 text-[14px] text-ink-secondary">
-          {users.length} {users.length === 1 ? 'cuenta' : 'cuentas'} · {totalThisMonth} mensajes
-          este mes en total
-        </p>
+      <main className="mx-auto max-w-5xl px-6 py-10">
+        {/* Las dos cifras que se miran al entrar aquí, en grande. Antes eran
+            una frase de 14px que había que leer entera para sacar dos
+            números. */}
+        <dl className="mb-10 flex flex-wrap gap-12 border-b border-hairline pb-8">
+          <div>
+            <dt className="a-meta text-ink-tertiary">
+              {users.length === 1 ? 'Cuenta' : 'Cuentas'}
+            </dt>
+            <dd className="a-display mt-2 text-[clamp(2rem,6vw,3.5rem)] tabular-nums">
+              {users.length.toLocaleString('es-ES')}
+            </dd>
+          </div>
+          <div>
+            <dt className="a-meta text-ink-tertiary">Mensajes este mes</dt>
+            <dd className="a-display mt-2 text-[clamp(2rem,6vw,3.5rem)] tabular-nums text-accent">
+              {totalThisMonth.toLocaleString('es-ES')}
+            </dd>
+          </div>
+        </dl>
         <AdminUsers initialUsers={users} />
       </main>
     </div>
