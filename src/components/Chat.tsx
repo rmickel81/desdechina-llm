@@ -6,7 +6,7 @@ import { getHistory, saveHistory, clearHistory } from '@/lib/storage';
 import TaskSelector from './TaskSelector';
 import ModelPicker from './ModelPicker';
 import AccountModal from './AccountModal';
-import { ArrowUp, Clip, Close, TaskIcon } from './icons';
+import { ArrowUp, ChevronDown, Clip, Close, TaskIcon } from './icons';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -204,13 +204,20 @@ export default function Chat({ user, initialUsed }: ChatProps) {
             <span className="hidden text-[12px] tabular-nums text-ink-tertiary sm:inline">
               {remaining} restantes
             </span>
+            {/* El avatar solo no se leía como pulsable: el galón indica que
+                abre un panel, que es donde vive «Cerrar sesión». */}
             <button
               type="button"
               onClick={() => setIsAccountOpen(true)}
-              aria-label="Tu cuenta"
-              className="flex size-8 items-center justify-center rounded-full bg-elevated text-[13px] font-medium text-ink-secondary transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+              aria-label="Tu cuenta y cerrar sesión"
+              title="Tu cuenta"
+              aria-haspopup="dialog"
+              className="flex items-center gap-1 rounded-full bg-elevated py-1 pr-2 pl-1 text-[13px] font-medium text-ink-secondary transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
             >
-              {(user.name || user.email).charAt(0).toUpperCase()}
+              <span className="grid size-6 place-items-center rounded-full bg-hairline text-[12px]">
+                {(user.name || user.email).charAt(0).toUpperCase()}
+              </span>
+              <ChevronDown className="size-3.5" />
             </button>
           </div>
         </div>

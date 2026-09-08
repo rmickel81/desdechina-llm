@@ -1,10 +1,12 @@
-import { redirect } from 'next/navigation';
 import Chat from '@/components/Chat';
+import Landing from '@/components/Landing';
 import { getCurrentUser, getMonthlyUsage } from '@/lib/auth';
 
 export default async function Home() {
   const user = await getCurrentUser();
-  if (!user) redirect('/entrar');
+  // Sin sesión, la portada explica qué es esto. Antes redirigía a /entrar y
+  // quien llegaba de fuera se encontraba un formulario a pelo.
+  if (!user) return <Landing />;
 
   const used = await getMonthlyUsage(user.id);
 
