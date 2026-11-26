@@ -107,17 +107,6 @@ export const MODELS: Record<string, ModelConfig> = {
     acceptsImages: true,
     slug: "qwen3-8-flash"
   },
-  "qwen/qwen3.8-max-0902": {
-    id: "qwen/qwen3.8-max-0902",
-    name: "Qwen3.8 Max",
-    provider: "Alibaba",
-    description:
-      "El tope de gama de Alibaba, del 2 de septiembre. Caro: úsalo cuando la respuesta importe de verdad, no para el día a día.",
-    contextTokens: 1_000_000,
-    tier: "premium",
-    acceptsImages: true,
-    slug: "qwen3-8-max"
-  },
   "qwen/qwen3-coder-next": {
     id: "qwen/qwen3-coder-next",
     name: "Qwen3 Coder Next",
@@ -129,24 +118,13 @@ export const MODELS: Record<string, ModelConfig> = {
     acceptsImages: false,
     slug: "qwen3-coder-next"
   },
-  "qwen/qwen3-max-thinking": {
-    id: "qwen/qwen3-max-thinking",
-    name: "Qwen3 Max Thinking",
-    provider: "Alibaba",
-    description:
-      "Desarrolla el problema por dentro antes de contestar. Para cálculos con etapas y lógica encadenada.",
-    contextTokens: 262_144,
-    tier: "premium",
-    acceptsImages: false,
-    slug: "qwen3-max-thinking"
-  },
   "z-ai/glm-5.3": {
     id: "z-ai/glm-5.3",
     name: "GLM 5.3",
     provider: "Z.AI",
     description:
-      "El grande de Z.AI: 1,3 millones de tokens y razonamiento. Es de los caros del catálogo, y se nota en lo que resuelve.",
-    contextTokens: 1_310_720,
+      "El grande de Z.AI: un millón de tokens y razonamiento. Es de los caros del catálogo, y se nota en lo que resuelve.",
+    contextTokens: 1_048_576,
     tier: "premium",
     acceptsImages: false,
     slug: "glm-5-3"
@@ -156,8 +134,8 @@ export const MODELS: Record<string, ModelConfig> = {
     name: "GLM 5.3 Flash",
     provider: "Z.AI",
     description:
-      "1,3 millones de tokens, visión y precio de modelo barato. Es la mejor relación del catálogo entre lo que cabe y lo que cuesta.",
-    contextTokens: 1_310_720,
+      "Un millón de tokens, visión y precio de modelo barato. Es la mejor relación del catálogo entre lo que cabe y lo que cuesta.",
+    contextTokens: 1_048_576,
     tier: "economico",
     acceptsImages: true,
     slug: "glm-5-3-flash"
@@ -173,17 +151,6 @@ export const MODELS: Record<string, ModelConfig> = {
     acceptsImages: false,
     slug: "ling-3-0-flash"
   },
-  "bytedance-seed/seed-2.0-code": {
-    id: "bytedance-seed/seed-2.0-code",
-    name: "Seed 2.0 Code",
-    provider: "ByteDance",
-    description:
-      "Programación con entrada contenida y salida cara: rinde cuando le das mucho código y le pides respuestas cortas.",
-    contextTokens: 262_144,
-    tier: "premium",
-    acceptsImages: true,
-    slug: "seed-2-0-code"
-  },
   "bytedance-seed/seed-2-1-turbo": {
     id: "bytedance-seed/seed-2-1-turbo",
     name: "Seed 2.1 Turbo",
@@ -195,17 +162,6 @@ export const MODELS: Record<string, ModelConfig> = {
     acceptsImages: true,
     slug: "seed-2-1-turbo"
   },
-  "bytedance-seed/seed-1.6-flash": {
-    id: "bytedance-seed/seed-1.6-flash",
-    name: "Seed 1.6 Flash",
-    provider: "ByteDance",
-    description:
-      "Multimodal y muy barato. Bien para mirar imágenes en cantidad sin que la factura se note.",
-    contextTokens: 262_144,
-    tier: "economico",
-    acceptsImages: true,
-    slug: "seed-1-6-flash"
-  },
   "bytedance-seed/seed-2.0-lite": {
     id: "bytedance-seed/seed-2.0-lite",
     name: "Seed 2.0 Lite",
@@ -216,17 +172,6 @@ export const MODELS: Record<string, ModelConfig> = {
     tier: "equilibrado",
     acceptsImages: true,
     slug: "seed-2-0-lite"
-  },
-  "moonshotai/kimi-k3": {
-    id: "moonshotai/kimi-k3",
-    name: "Kimi K3",
-    provider: "Moonshot AI",
-    description:
-      "La tercera generación de Kimi. Es con diferencia el más caro del catálogo, así que conviene reservarlo para lo que de verdad no salga con otro.",
-    contextTokens: 1_048_576,
-    tier: "premium",
-    acceptsImages: true,
-    slug: "kimi-k3"
   },
   "moonshotai/kimi-k2.7-code": {
     id: "moonshotai/kimi-k2.7-code",
@@ -250,24 +195,13 @@ export const MODELS: Record<string, ModelConfig> = {
     acceptsImages: true,
     slug: "kimi-k2-5"
   },
-  "kwaipilot/kat-coder-pro-v2.5": {
-    id: "kwaipilot/kat-coder-pro-v2.5",
-    name: "KAT Coder Pro",
-    provider: "Kuaishou",
-    description:
-      "El modelo de programación de Kuaishou. Una alternativa de otra familia cuando los de siempre se atascan con el mismo problema.",
-    contextTokens: 262_144,
-    tier: "premium",
-    acceptsImages: false,
-    slug: "kat-coder-pro"
-  },
   "stepfun/step-3.7-flash": {
     id: "stepfun/step-3.7-flash",
     name: "Step 3.7 Flash",
     provider: "StepFun",
     description:
       "Rápido, barato y con visión. Buen primer filtro para saber si un documento merece lectura seria.",
-    contextTokens: 262_144,
+    contextTokens: 256_000,
     tier: "equilibrado",
     acceptsImages: true,
     slug: "step-3-7-flash"
@@ -282,28 +216,6 @@ export const MODELS: Record<string, ModelConfig> = {
     tier: "equilibrado",
     acceptsImages: true,
     slug: "minimax-m3"
-  },
-  "minimax/minimax-m2-her": {
-    id: "minimax/minimax-m2-her",
-    name: "MiniMax M2-her",
-    provider: "MiniMax",
-    description:
-      "El único del catálogo ajustado para que el texto tenga voz propia. Su ventana es la más pequeña, y esa es la contrapartida.",
-    contextTokens: 65_536,
-    tier: "equilibrado",
-    acceptsImages: false,
-    slug: "minimax-m2-her"
-  },
-  "minimax/minimax-m2.1": {
-    id: "minimax/minimax-m2.1",
-    name: "MiniMax M2.1",
-    provider: "MiniMax",
-    description:
-      "La variante de MiniMax orientada a programar y a encadenar herramientas.",
-    contextTokens: 204_800,
-    tier: "equilibrado",
-    acceptsImages: false,
-    slug: "minimax-m2-1"
   },
   "tencent/hy-mt2-30b-a3b": {
     id: "tencent/hy-mt2-30b-a3b",
@@ -349,38 +261,71 @@ export const MODELS: Record<string, ModelConfig> = {
     acceptsImages: false,
     slug: "tencent-hunyuan-3"
   },
-  "tencent/hunyuan-a13b-instruct": {
-    id: "tencent/hunyuan-a13b-instruct",
-    name: "Hunyuan A13B",
+  "moonshotai/kimi-k3.1-pro": {
+    id: "moonshotai/kimi-k3.1-pro",
+    name: "Kimi K3.1 Pro",
+    provider: "Moonshot AI",
+    description:
+      "El sucesor de Kimi K3, con pesos abiertos. Sigue entre los caros del catálogo: resérvalo para lo que de verdad no salga con otro.",
+    contextTokens: 1_048_576,
+    tier: "premium",
+    acceptsImages: true,
+    slug: "kimi-k3-1-pro"
+  },
+  "qwen/qwen4-max": {
+    id: "qwen/qwen4-max",
+    name: "Qwen4 Max",
+    provider: "Alibaba",
+    description:
+      "El nuevo tope de gama de Alibaba, del 16 de noviembre. Razona por defecto y ve imágenes. Caro: para cuando la respuesta importe de verdad.",
+    contextTokens: 1_000_000,
+    tier: "premium",
+    acceptsImages: true,
+    slug: "qwen4-max"
+  },
+  "tencent/hy4": {
+    id: "tencent/hy4",
+    name: "Hy4",
     provider: "Tencent",
     description:
-      "Un generalista abierto de Tencent, económico y de contexto medio. Sirve de alternativa cuando quieres salir de las casas de siempre.",
-    contextTokens: 131_072,
-    tier: "economico",
-    acceptsImages: false,
-    slug: "tencent-hunyuan-a13b"
-  },
-  "meituan/longcat-2.0": {
-    id: "meituan/longcat-2.0",
-    name: "LongCat 2.0",
-    provider: "Meituan",
-    description:
-      "Un millón de tokens a precio contenido. Para partir de todo el material a la vez en lugar de resumirlo antes.",
-    contextTokens: 1_048_756,
+      "El modelo grande de Tencent: un millón de tokens y visión a precio intermedio. Para partir de todo el material a la vez.",
+    contextTokens: 1_048_576,
     tier: "equilibrado",
-    acceptsImages: false,
-    slug: "longcat-2-0"
+    acceptsImages: true,
+    slug: "tencent-hy4"
   },
-  "xiaomi/mimo-v2.5": {
-    id: "xiaomi/mimo-v2.5",
-    name: "MiMo V2.5",
-    provider: "Xiaomi",
+  "tencent/hy4-flash": {
+    id: "tencent/hy4-flash",
+    name: "Hy4 flash",
+    provider: "Tencent",
     description:
-      "El multimodal de Xiaomi: un millón de tokens, imagen y audio, por céntimos. El más barato del catálogo que ve imágenes.",
-    contextTokens: 1_050_000,
+      "La versión ligera de Hy4: un millón de tokens y visión por céntimos. Un generalista barato de otra casa.",
+    contextTokens: 1_048_576,
     tier: "economico",
     acceptsImages: true,
-    slug: "mimo-v2-5"
+    slug: "tencent-hy4-flash"
+  },
+  "minimax/minimax-m3.1-flash": {
+    id: "minimax/minimax-m3.1-flash",
+    name: "MiniMax M3.1 Flash",
+    provider: "MiniMax",
+    description:
+      "El de MiniMax para programar y encadenar pasos: un millón de tokens y visión a precio intermedio.",
+    contextTokens: 1_048_576,
+    tier: "equilibrado",
+    acceptsImages: true,
+    slug: "minimax-m3-1-flash"
+  },
+  "xiaomi/mimo-v2.6-flash": {
+    id: "xiaomi/mimo-v2.6-flash",
+    name: "MiMo V2.6 Flash",
+    provider: "Xiaomi",
+    description:
+      "El multimodal de Xiaomi: un millón de tokens y visión por céntimos. Para mirar imágenes en cantidad sin que la factura se note.",
+    contextTokens: 1_048_576,
+    tier: "economico",
+    acceptsImages: true,
+    slug: "mimo-v2-6-flash"
   }
 };
 
@@ -395,7 +340,7 @@ export const TASKS: TaskConfig[] = [
       "deepseek/deepseek-v4-pro",
       "qwen/qwen3.7-plus",
       "z-ai/glm-5.3-flash",
-      "tencent/hunyuan-a13b-instruct",
+      "tencent/hy4-flash",
       "inclusionai/ling-3.0-flash"
     ]
   },
@@ -408,9 +353,7 @@ export const TASKS: TaskConfig[] = [
       "qwen/qwen3-coder-next",
       "bytedance-seed/seed-2-1-turbo",
       "moonshotai/kimi-k2.7-code",
-      "kwaipilot/kat-coder-pro-v2.5",
-      "bytedance-seed/seed-2.0-code",
-      "minimax/minimax-m2.1",
+      "minimax/minimax-m3.1-flash",
       "z-ai/glm-5.3"
     ]
   },
@@ -425,7 +368,7 @@ export const TASKS: TaskConfig[] = [
       "moonshotai/kimi-k2.5",
       "qwen/qwen3.8-flash",
       "stepfun/step-3.7-flash",
-      "moonshotai/kimi-k3"
+      "moonshotai/kimi-k3.1-pro"
     ]
   },
   {
@@ -435,9 +378,8 @@ export const TASKS: TaskConfig[] = [
     description: "Nombres, eslóganes, guiones y textos donde el tono es el encargo.",
     models: [
       "minimax/minimax-m3",
-      "minimax/minimax-m2-her",
       "z-ai/glm-5.3",
-      "qwen/qwen3.8-max-0902"
+      "qwen/qwen4-max"
     ]
   },
   {
@@ -460,9 +402,9 @@ export const TASKS: TaskConfig[] = [
     description: "Problemas con varias etapas, lógica encadenada y casos límite.",
     models: [
       "deepseek/deepseek-v4-pro",
-      "qwen/qwen3-max-thinking",
+      "qwen/qwen4-max",
       "z-ai/glm-5.3",
-      "moonshotai/kimi-k3"
+      "moonshotai/kimi-k3.1-pro"
     ]
   },
   {
@@ -474,7 +416,7 @@ export const TASKS: TaskConfig[] = [
       "qwen/qwen3.8-flash",
       "z-ai/glm-5.3-flash",
       "tencent/hy3",
-      "meituan/longcat-2.0"
+      "tencent/hy4"
     ]
   },
   {
@@ -484,11 +426,10 @@ export const TASKS: TaskConfig[] = [
     description: "Adjuntar una imagen y preguntar por ella: leerla, describirla o sacar sus datos.",
     models: [
       "z-ai/glm-5.3-flash",
-      "xiaomi/mimo-v2.5",
-      "bytedance-seed/seed-1.6-flash",
+      "xiaomi/mimo-v2.6-flash",
       "deepseek/deepseek-v4-flash-vision-exp",
       "bytedance-seed/seed-2.0-lite",
-      "qwen/qwen3.8-max-0902"
+      "qwen/qwen4-max"
     ]
   }
 ];
